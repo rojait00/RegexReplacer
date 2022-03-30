@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
+using RegexReplacer.Shared;
 
-namespace RegexReplacer
+namespace RegexReplacer.FormsApp
 {
     public partial class FormSettings : Form
     {
@@ -15,7 +16,8 @@ namespace RegexReplacer
 
         private void Form_Load(object sender, EventArgs e)
         {
-            ruleSetHelper.LoadRuleSets(comboBoxReplacments.Items, this);
+            ruleSetHelper.LoadRuleSets();
+            ruleSetHelper.AddRulesetsToComboBox((ObjectCollection)comboBoxReplacments.Items, true);
             UpdateGui();
         }
 
@@ -36,7 +38,7 @@ namespace RegexReplacer
 
         private void UpdateGui()
         {
-            if (RuleSetName.ToLower() == RuleSetHelper.NewFile.ToLower())
+            if (RuleSetName.ToLower() == Shared.RuleSetHelper.NewFile.ToLower())
             {
                 RuleSetName = "";
             }
@@ -46,7 +48,7 @@ namespace RegexReplacer
         private void DisplayRuleSet(RuleSet replaceValues)
         {
             dataGridView.Rows.Clear();
-            
+
             var emptyRows = Enumerable.Range(0, replaceValues.ReplaceWith.Count).Select(x => new DataGridViewRow()).ToArray();
             dataGridView.Rows.AddRange(emptyRows);
 
@@ -61,7 +63,7 @@ namespace RegexReplacer
 
         private void SaveFile()
         {
-            if(string.IsNullOrWhiteSpace(RuleSetName))
+            if (string.IsNullOrWhiteSpace(RuleSetName))
             {
                 return;
             }
@@ -74,7 +76,7 @@ namespace RegexReplacer
                     ReplaceWith = GetValuesFromGrid()
                 };
 
-                var path = Path.Combine(RuleSetHelper.Path, replacement.Name + ".json");
+                var path = Path.Combine(ruleSetHelper.Path, replacement.Name + ".json");
                 File.WriteAllText(path, JsonConvert.SerializeObject(replacement));
                 btnSave.BackColor = Color.LightGreen;
             }

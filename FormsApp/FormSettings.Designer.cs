@@ -1,4 +1,4 @@
-﻿namespace RegexReplacer
+﻿namespace RegexReplacer.FormsApp
 {
     partial class FormSettings
     {

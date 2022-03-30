@@ -1,6 +1,6 @@
-﻿namespace RegexReplacer
+﻿namespace RegexReplacer.Shared
 {
-    internal class RuleSet
+    public class RuleSet
     {
         public string Name { get; set; } = "";
 

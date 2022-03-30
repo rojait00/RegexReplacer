@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
-namespace RegexReplacer
+namespace RegexReplacer.FormsApp
 {
     public partial class FormRegexReplacer : Form
     {
@@ -36,7 +36,7 @@ namespace RegexReplacer
                 StartPosition = FormStartPosition.CenterParent
             };
 
-            if (comboBoxRuleSets.Text != RuleSetHelper.All)
+            if (comboBoxRuleSets.Text != Shared.RuleSetHelper.All)
             {
                 settings.RuleSetName = comboBoxRuleSets.Text;
             }
@@ -47,7 +47,8 @@ namespace RegexReplacer
 
         private void LoadRuleSets()
         {
-            ruleSetHelper.LoadRuleSets(comboBoxRuleSets.Items, this);
+            ruleSetHelper.LoadRuleSets();
+            ruleSetHelper.AddRulesetsToComboBox((ObjectCollection)comboBoxRuleSets.Items, false);
         }
 
         private void InputChangedEventHandler(object sender, EventArgs e)

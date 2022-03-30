@@ -1,4 +1,4 @@
-namespace RegexReplacer
+namespace RegexReplacer.FormsApp
 {
     internal static class Program
     {

@@ -28,7 +28,14 @@ namespace RegexReplacer.FormsApp
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            SaveFile();
+            if(ruleSetHelper.SaveFile(RuleSetName, GetValuesFromGrid()))
+            {
+                btnSave.BackColor = Color.LightGreen;
+            }
+            else
+            {
+                btnSave.BackColor = Color.Red;
+            }
         }
 
         private void BtnSave_Leave(object sender, EventArgs e)
@@ -58,31 +65,6 @@ namespace RegexReplacer.FormsApp
 
                 dataGridView.Rows[i].Cells[0].Value = replaceWith.Key;
                 dataGridView.Rows[i].Cells[1].Value = replaceWith.Value;
-            }
-        }
-
-        private void SaveFile()
-        {
-            if (string.IsNullOrWhiteSpace(RuleSetName))
-            {
-                return;
-            }
-
-            try
-            {
-                var replacement = new RuleSet
-                {
-                    Name = comboBoxReplacments.Text,
-                    ReplaceWith = GetValuesFromGrid()
-                };
-
-                var path = Path.Combine(ruleSetHelper.Path, replacement.Name + ".json");
-                File.WriteAllText(path, JsonConvert.SerializeObject(replacement));
-                btnSave.BackColor = Color.LightGreen;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
             }
         }
 

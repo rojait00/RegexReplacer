@@ -1,9 +1,38 @@
 ﻿@page "/"
+@using RegexReplacer.Client.Helper
+@inject IJSRuntime jsRuntime
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<RadzenSplitter Style="height:100%; width:100%;">
+    <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
+        <RadzenTextArea @bind-Value=@input Style="height:100%; width:100%;"  Change=@(args => OnChange())></RadzenTextArea>
+    </RadzenSplitterPane>
+    <RadzenSplitterPane Size="20%" Min="30px" Max="90%">
+        <RadzenTextBox @bind-Value=@name Style="width:100%;"></RadzenTextBox>
+    </RadzenSplitterPane>
+    <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
+        <RadzenTextArea @bind-Value=@output ReadOnly=true Style="height:100%; width:100%;"></RadzenTextArea>
+    </RadzenSplitterPane>
+</RadzenSplitter>
 
-Welcome to your new app.
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code
+{
+    string input = "";
+    string name = RuleSetHelper.All;
+    string output = "";
+
+    RuleSetHelper ruleSetHelper;
+
+    protected override void OnInitialized()
+    {
+        ruleSetHelper = new RuleSetHelper(jsRuntime);
+        base.OnInitialized();
+    }
+
+    public void OnChange()
+    {
+        output = ruleSetHelper.Generate(input, name);
+    }
+}

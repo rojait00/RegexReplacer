@@ -34,11 +34,16 @@ namespace RegexReplacer
 
         public string Generate(string content, string ruleSetName)
         {
-            var selectedRuleSets = ruleSets.Where(x => ruleSetName == All || ruleSetName == x.Name)
-                                                       .ToList();
+            ruleSetName = ruleSetName.ToLower();
+
+            var selectedRuleSets = ruleSets.Where(x => ruleSetName == All.ToLower() || ruleSetName == x.Name.ToLower())
+                                           .ToList();
+
             var rules = selectedRuleSets.SelectMany(x => x.ReplaceWith)
                                         .ToList();
+
             rules.ForEach(x => content = Replace(content, x.Key, x.Value));
+
             return content;
         }
 

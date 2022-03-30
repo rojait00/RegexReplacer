@@ -29,9 +29,14 @@ namespace RegexReplacer
             SaveFile();
         }
 
+        private void BtnSave_Leave(object sender, EventArgs e)
+        {
+            btnSave.BackColor = SystemColors.Control;
+        }
+
         private void UpdateGui()
         {
-            if (RuleSetName == RuleSetHelper.NewFile)
+            if (RuleSetName.ToLower() == RuleSetHelper.NewFile.ToLower())
             {
                 RuleSetName = "";
             }
@@ -56,6 +61,11 @@ namespace RegexReplacer
 
         private void SaveFile()
         {
+            if(string.IsNullOrWhiteSpace(RuleSetName))
+            {
+                return;
+            }
+
             try
             {
                 var replacement = new RuleSet
@@ -66,7 +76,7 @@ namespace RegexReplacer
 
                 var path = Path.Combine(RuleSetHelper.Path, replacement.Name + ".json");
                 File.WriteAllText(path, JsonConvert.SerializeObject(replacement));
-                MessageBox.Show("File has been saved.");
+                btnSave.BackColor = Color.LightGreen;
             }
             catch (Exception ex)
             {

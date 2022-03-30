@@ -59,6 +59,7 @@
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
+            this.btnSave.Leave += new System.EventHandler(this.BtnSave_Leave);
             // 
             // dataGridView
             // 

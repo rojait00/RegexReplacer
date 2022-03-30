@@ -48,7 +48,7 @@ namespace RegexReplacer.FormsApp
         private void LoadRuleSets()
         {
             ruleSetHelper.LoadRuleSets();
-            ruleSetHelper.AddRulesetsToComboBox((ObjectCollection)comboBoxRuleSets.Items, false);
+            ruleSetHelper.AddRulesetsToCollection((ObjectCollection)comboBoxRuleSets.Items, false);
         }
 
         private void InputChangedEventHandler(object sender, EventArgs e)

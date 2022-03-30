@@ -17,7 +17,7 @@ namespace RegexReplacer.FormsApp
         private void Form_Load(object sender, EventArgs e)
         {
             ruleSetHelper.LoadRuleSets();
-            ruleSetHelper.AddRulesetsToComboBox((ObjectCollection)comboBoxReplacments.Items, true);
+            ruleSetHelper.AddRulesetsToCollection((ObjectCollection)comboBoxReplacments.Items, true);
             UpdateGui();
         }
 

@@ -15,12 +15,9 @@ namespace RegexReplacer.FormsApp
         public virtual void LoadRuleSets()
         {
             Directory.CreateDirectory(Path);
-            RuleSets = Directory.GetFiles(Path)
-                                .Select(x => File.ReadAllText(x))
-                                .Select(x => GetRuleSetFromJson(x))
-                                .Where(x => !x.IsNull)
-                                .ToList();
-
+            var fileContents = Directory.GetFiles(Path)
+                                .Select(x => File.ReadAllText(x));
+            RuleSets = GetRuleSetsFromJson(fileContents);
         }
 
         public bool SaveFile(string name, Dictionary<string, string> replaceWith)

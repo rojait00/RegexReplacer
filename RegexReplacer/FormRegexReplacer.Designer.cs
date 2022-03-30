@@ -31,13 +31,13 @@
             this.tbInput = new System.Windows.Forms.RichTextBox();
             this.tbOutput = new System.Windows.Forms.RichTextBox();
             this.btnSettings = new System.Windows.Forms.Button();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.comboBoxReplacments = new System.Windows.Forms.ComboBox();
+            this.splitContainer = new System.Windows.Forms.SplitContainer();
+            this.comboBoxRuleSets = new System.Windows.Forms.ComboBox();
             this.btnReload = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
+            this.splitContainer.Panel1.SuspendLayout();
+            this.splitContainer.Panel2.SuspendLayout();
+            this.splitContainer.SuspendLayout();
             this.SuspendLayout();
             // 
             // tbInput
@@ -50,7 +50,7 @@
             this.tbInput.Size = new System.Drawing.Size(287, 359);
             this.tbInput.TabIndex = 0;
             this.tbInput.Text = "";
-            this.tbInput.TextChanged += new System.EventHandler(this.richTextBox1_TextChanged);
+            this.tbInput.TextChanged += new System.EventHandler(this.InputChanged);
             // 
             // tbOutput
             // 
@@ -71,35 +71,37 @@
             this.btnSettings.TabIndex = 2;
             this.btnSettings.Text = "Settings";
             this.btnSettings.UseVisualStyleBackColor = true;
-            this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
+            this.btnSettings.Click += new System.EventHandler(this.BtnSettings_Click);
             // 
             // splitContainer1
             // 
-            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.splitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitContainer1.Location = new System.Drawing.Point(12, 46);
-            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer.Location = new System.Drawing.Point(12, 46);
+            this.splitContainer.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.tbInput);
+            this.splitContainer.Panel1.Controls.Add(this.tbInput);
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.tbOutput);
-            this.splitContainer1.Size = new System.Drawing.Size(881, 365);
-            this.splitContainer1.SplitterDistance = 293;
-            this.splitContainer1.TabIndex = 3;
+            this.splitContainer.Panel2.Controls.Add(this.tbOutput);
+            this.splitContainer.Size = new System.Drawing.Size(881, 365);
+            this.splitContainer.SplitterDistance = 293;
+            this.splitContainer.TabIndex = 3;
             // 
             // comboBoxReplacments
             // 
-            this.comboBoxReplacments.FormattingEnabled = true;
-            this.comboBoxReplacments.Location = new System.Drawing.Point(153, 16);
-            this.comboBoxReplacments.Name = "comboBoxReplacments";
-            this.comboBoxReplacments.Size = new System.Drawing.Size(132, 23);
-            this.comboBoxReplacments.TabIndex = 1;
-            this.comboBoxReplacments.SelectedIndexChanged += new System.EventHandler(this.comboBoxReplacments_SelectedIndexChanged);
+            this.comboBoxRuleSets.FormattingEnabled = true;
+            this.comboBoxRuleSets.Location = new System.Drawing.Point(153, 16);
+            this.comboBoxRuleSets.Name = "comboBoxReplacments";
+            this.comboBoxRuleSets.Size = new System.Drawing.Size(132, 23);
+            this.comboBoxRuleSets.TabIndex = 1;
+            this.comboBoxRuleSets.SelectedIndexChanged += new System.EventHandler(this.InputChanged);
+            this.comboBoxRuleSets.TextChanged += new System.EventHandler(this.InputChanged);
+            this.comboBoxRuleSets.Leave += new System.EventHandler(this.InputChanged);
             // 
             // btnReload
             // 
@@ -109,7 +111,7 @@
             this.btnReload.TabIndex = 4;
             this.btnReload.Text = "Load";
             this.btnReload.UseVisualStyleBackColor = true;
-            this.btnReload.Click += new System.EventHandler(this.btnReload_Click);
+            this.btnReload.Click += new System.EventHandler(this.BtnReload_Click);
             // 
             // FormRegexReplacer
             // 
@@ -117,16 +119,16 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(905, 423);
             this.Controls.Add(this.btnReload);
-            this.Controls.Add(this.comboBoxReplacments);
+            this.Controls.Add(this.comboBoxRuleSets);
             this.Controls.Add(this.btnSettings);
-            this.Controls.Add(this.splitContainer1);
+            this.Controls.Add(this.splitContainer);
             this.Name = "FormRegexReplacer";
             this.Text = "RegexReplacer";
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
+            this.Load += new System.EventHandler(this.Form_Load);
+            this.splitContainer.Panel1.ResumeLayout(false);
+            this.splitContainer.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).EndInit();
+            this.splitContainer.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -136,8 +138,8 @@
         private RichTextBox tbInput;
         private RichTextBox tbOutput;
         private Button btnSettings;
-        private SplitContainer splitContainer1;
-        private ComboBox comboBoxReplacments;
+        private SplitContainer splitContainer;
+        private ComboBox comboBoxRuleSets;
         private Button btnReload;
     }
 }

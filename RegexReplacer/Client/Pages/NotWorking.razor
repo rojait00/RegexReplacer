@@ -1,0 +1,32 @@
+﻿@page "/NotWorking"
+@using System.Text.RegularExpressions
+
+<PageTitle>NotWorking</PageTitle>
+
+
+<RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                Placeholder="Select..." Multiple="true" Class="w-50"
+                @bind-Value=@selectedValues Data=@data TextProperty="Name" ValueProperty="Value" />
+
+@code
+{
+    IEnumerable<TestClass> data = GetData();
+    IEnumerable<int> selectedValues = new[] { 3 };
+
+    private static IEnumerable<TestClass> GetData()
+    {
+        var values = Enumerable.Range(1, 10);
+        return values.Select(x => new TestClass("name" + x, x));
+    }
+
+    class TestClass
+    {
+        public TestClass(string name, int value)
+        {
+            Name = name;
+            Value = value;
+        }
+        public string Name { get; private set; }
+        public int Value { get; private set; }
+    }
+}

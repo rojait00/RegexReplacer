@@ -18,16 +18,22 @@ namespace RegexReplacer.Shared
 
         public virtual void AddRulesetsToCollection(IObjectCollection items, bool isEditMode)
         {
-            List<string> newItems = GetRuleSetNames(isEditMode);
+            List<string> newItems = GetRuleSetNames();
 
             items.Clear();
+            
+            items.Add(isEditMode ? NewFile : All);
             items.AddRange(newItems);
         }
 
-        public List<string> GetRuleSetNames(bool isEditMode)
+        public List<string> GetRuleSetNames()
         {
             var newItems = ruleSets.Select(x => x.Name).ToList();
-            newItems.Add(isEditMode ? NewFile : All);
+            newItems.Add("test1");
+            newItems.Add("test2");
+            newItems.Add("test3");
+            newItems.Add("test4");
+            newItems.Add("test5");
             return newItems;
         }
 

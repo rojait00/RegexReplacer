@@ -11,27 +11,17 @@
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="20%" Min="30px" Max="90%">
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        @bind-Value=@selectedSets Multiple="true" Placeholder="Select Rule Set..." Data=@ruleSetHelper?.GetRuleSetNames(false) Class="full-w" />
-
-        @*<RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-            @bind-Value=@selectedOptions Multiple="true" Placeholder="Select Regex Options..."
-            Data=@regexOptions Class="full-w" />*@
-
-        @*<RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        @bind-Value=@selectedOptions Multiple="true" Data=@regexOptions TextProperty="Name" ValueProperty="Value"
-                        Placeholder="Select Regex Option..." Class="full-w">
-        </RadzenDropDown>*@
+                        Placeholder="Select Rule Set..." Multiple="true" Class="full-w"
+                        @bind-Value=@selectedRuleSets Data=@ruleSets />
 
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                           @bind-Value=@selectedOptions Multiple="true" Data=@regexOptions TextProperty="Name" ValueProperty="Value"
-                           Placeholder="Select Regex Option..." Class="full-w"/>
-
+                        Placeholder="Select Option..." Multiple="true" Class="full-w"
+                        @bind-Value=@selectedOptions Data=@regexOptions />
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
         <RadzenTextArea @bind-Value=@output ReadOnly=true class="full-h, full-w"></RadzenTextArea>
     </RadzenSplitterPane>
 </RadzenSplitter>
-
 
 @code
 {
@@ -40,15 +30,17 @@
 
     RuleSetHelper? ruleSetHelper;
 
-    IEnumerable<string> selectedSets = new List<string>() { RuleSetHelper.All };
+    IEnumerable<RegexOptions> regexOptions = GetOptions();
+    IEnumerable<RegexOptions> selectedOptions = new[] { RegexOptions.IgnoreCase };
 
-    IEnumerable<RegexOptions> selectedOptions = new [] { RegexOptions.IgnoreCase };
-    IEnumerable<RegexOptionsHelper> regexOptions = GetOptions();
-
+    IEnumerable<string> ruleSets = Array.Empty<string>();
+    IEnumerable<string> selectedRuleSets = Array.Empty<string>();
 
     protected override void OnInitialized()
     {
         ruleSetHelper = new RuleSetHelper(jsRuntime);
+        ruleSets = ruleSetHelper.GetRuleSetNames();
+        selectedRuleSets = ruleSets;
         base.OnInitialized();
     }
 
@@ -57,30 +49,13 @@
         if (ruleSetHelper == null)
             return;
 
-        ruleSetHelper.SelectedRegexOptions = selectedOptions; //.Select(x => x.Option);
-        output = ruleSetHelper?.Generate(input, selectedSets) ?? string.Empty;
+        ruleSetHelper.SelectedRegexOptions = selectedOptions;
+        output = ruleSetHelper.Generate(input, selectedRuleSets);
     }
 
-    private static IEnumerable<RegexOptionsHelper> GetOptions()
+    private static List<RegexOptions> GetOptions()
     {
-        return ((RegexOptions[])Enum.GetValues(typeof(RegexOptions))).Select(x => new RegexOptionsHelper(x));
-    }
-
-    private static IEnumerable<RegexOptionsClass> GetOptionsClass()
-    {
-        return ((RegexOptions[])Enum.GetValues(typeof(RegexOptions))).Select(x => new RegexOptionsClass(x));
-    }
-
-    class RegexOptionsClass
-    {
-        public RegexOptionsClass(RegexOptions option)
-        {
-            Option = option;
-        }
-
-        public int Value { get { return (int)Option; } }
-        public string Name { get { return Option.ToString(); } }
-
-        public RegexOptions Option { get; }
+        var values = (RegexOptions[])Enum.GetValues(typeof(RegexOptions));
+        return values.ToList();
     }
 }

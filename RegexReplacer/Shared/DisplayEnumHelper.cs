@@ -53,6 +53,7 @@
         {
             return new DisplayEnumHelper<EnumType>(value);
         }
+
         public static implicit operator EnumType(DisplayEnumHelper<EnumType> value)
         {
             return value.Option;

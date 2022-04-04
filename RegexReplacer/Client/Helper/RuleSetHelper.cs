@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using Newtonsoft.Json;
+using Radzen;
 using RegexReplacer.Shared;
 using System;
 using System.Collections.Generic;
@@ -21,13 +22,13 @@ namespace RegexReplacer.Client.Helper
 
         public virtual async Task LoadRuleSetsAsync()
         {
-            List<string> allRuleSetNames = await GetRuleSetNames();
+            List<string> allRuleSetNames = await LoadRuleSetNames();
             var fileContents = allRuleSetNames.Select(x => dataSaveHelper.Read(x).Result);
             RuleSets = GetRuleSetsFromJson(fileContents);
         }
 
 
-        public async Task<bool> SaveFileAsync(string name, Dictionary<string, string> replaceWith)
+        public async Task<bool> SaveFileAsync(string name, Dictionary<string, string> replaceWith, NotificationService notificationService)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -42,7 +43,7 @@ namespace RegexReplacer.Client.Helper
                     ReplaceWith = replaceWith
                 };
 
-                var names = await GetRuleSetNames();
+                var names = await LoadRuleSetNames();
                 if (!names.Contains(name))
                 {
                     names.Add(name);
@@ -50,16 +51,41 @@ namespace RegexReplacer.Client.Helper
                 }
 
                 await dataSaveHelper.Save(name, JsonConvert.SerializeObject(replacement));
+                ShowSucessMeesage(name, notificationService);
                 return true;
             }
             catch (Exception ex)
             {
-                // ToDo: Notification
+                ShowErrorMessage(notificationService, ex);
                 return false;
             }
         }
 
-        private async Task<List<string>> GetRuleSetNames()
+        private static void ShowErrorMessage(NotificationService notificationService, Exception ex)
+        {
+            var message = new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Could not save Rule Set!",
+                Detail = ex.Message,
+                Duration = 9000
+            };
+            notificationService.Notify(message);
+        }
+
+        private static void ShowSucessMeesage(string name, NotificationService notificationService)
+        {
+            var message = new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Rule Set saved!",
+                Detail = $"The rule set \"{name}\" has been saved.",
+                Duration = 3000
+            };
+            notificationService.Notify(message);
+        }
+
+        private async Task<List<string>> LoadRuleSetNames()
         {
             var content = await dataSaveHelper.Read(RulSetNamesCookie);
             var allRuleSetNames = JsonConvert.DeserializeObject<List<string>>(content) ?? new List<string>();

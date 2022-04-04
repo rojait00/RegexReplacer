@@ -1,25 +1,152 @@
 ﻿@page "/editruleset"
+@using RegexReplacer.Client.Helper
+@inject NotificationService notificationService
+@inject IJSRuntime jsRuntime
 
 <PageTitle>Edit Rule Set</PageTitle>
 
 <h1>Edit Rule Set</h1>
 
-<div class="full-h, full-w">
-    <div class="inline-40">
-        left
-    </div>
-    <div class="inline-20">
-        middle
-    </div>
-    <div class="inline-40">
-        right
-    </div>
-</div>
-@code {
-    private int currentCount = 0;
 
-    private void IncrementCount()
+<RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="Add New Rule" Click="@InsertRow" Disabled=@(ruleToInsert != null) />
+<RadzenDataGrid @ref="rulesGrid" AllowFiltering="false" AllowPaging="true" PageSize="20" AllowSorting="false" EditMode="DataGridEditMode.Multiple"
+                Data="@rules" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" TItem="Rule">
+    <Columns>
+        <RadzenDataGridColumn Property="Replace" Title="Replace" TItem="Rule" Width="40%" />
+        <RadzenDataGridColumn Property="With" Title="With" TItem="Rule" Width="40%" />
+        @*<RadzenDataGridColumn Property="Type" Title="Type" TItem="Rule" Width="220px">
+            <EditTemplate Context="rule">
+            <RadzenDropDown @bind-Value="order.CustomerID" Data="@customers" TextProperty="CompanyName" ValueProperty="CustomerID" Style="width:100%; display: block;" />
+            </EditTemplate>
+            </RadzenDataGridColumn>*@
+        <RadzenDataGridColumn TItem="Rule" Context="sampleBlazorModelsSampleRule" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="10%">
+            <Template Context="rule">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(rule))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="rule">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(rule))">
+                </RadzenButton>
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@((args) => CancelEdit(rule))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Rule" Context="rule" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="10%">
+            <Template Context="rule">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Size="ButtonSize.Small" Class="m-1" Click="@(args => DeleteRow(rule))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="rule">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Size="ButtonSize.Small" Class="m-1" Click="@(args => DeleteRow(rule))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    RadzenDataGrid<Rule> rulesGrid;
+    IList<Rule> rules;
+    Rule ruleToInsert;
+
+    RuleSetHelper? ruleSetHelper = null;
+    string name = RuleSetHelper.NewFile;
+
+
+    IEnumerable<string> ruleSets = Array.Empty<string>();
+
+
+    protected override void OnInitialized()
     {
-        currentCount++;
+        ruleSetHelper = new RuleSetHelper(jsRuntime);
+        ruleSets = ruleSetHelper.GetRuleSetNames();
+        name = ruleSets.FirstOrDefault() ?? RuleSetHelper.NewFile;
+        base.OnInitialized();
+    }
+
+    public void Save()
+    {
+        ruleSetHelper?.SaveFileAsync(name, rulesGrid.Value.GetDictionary(), notificationService);
+    }
+
+    async Task EditRow(Rule rule)
+    {
+        await rulesGrid.EditRow(rule);
+    }
+
+    void OnUpdateRow(Rule rule)
+    {
+        if (rule == ruleToInsert)
+        {
+            ruleToInsert = null;
+        }
+
+        AddOrUpdate(rule);
+    }
+
+    async Task SaveRow(Rule rule)
+    {
+        if (rule == ruleToInsert)
+        {
+            ruleToInsert = null;
+        }
+
+        await rulesGrid.UpdateRow(rule);
+    }
+
+    void CancelEdit(Rule rule)
+    {
+        if (rule == ruleToInsert)
+        {
+            ruleToInsert = null;
+        }
+
+        rulesGrid.CancelEditRow(rule);
+    }
+
+    async Task DeleteRow(Rule rule)
+    {
+        if (rule == ruleToInsert)
+        {
+            ruleToInsert = null;
+        }
+
+        if (rules.Contains(rule))
+        {
+            // ToDo: Delete Rule
+            rules.Remove(rule);
+
+            await rulesGrid.Reload();
+        }
+        else
+        {
+            rulesGrid.CancelEditRow(rule);
+        }
+    }
+
+
+    async Task InsertRow()
+    {
+        ruleToInsert = new Rule();
+        await rulesGrid.InsertRow(ruleToInsert);
+    }
+
+    private void AddOrUpdate(Rule rule)
+    {
+        var tempRule = rules.FirstOrDefault(x => x.Id == rule.Id);
+        if (tempRule == null)
+        {
+            tempRule.Replace = rule.Replace;
+            tempRule.With = rule.With;
+        }
+        else
+        {
+            rules.Add(new Rule(rule.Replace, rule.With));
+        }
+    }
+
+    void OnCreateRow(Rule rule)
+    {
+        AddOrUpdate(rule);
     }
 }

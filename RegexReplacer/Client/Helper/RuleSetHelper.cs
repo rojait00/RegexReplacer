@@ -11,7 +11,7 @@ namespace RegexReplacer.Client.Helper
 {
     internal partial class RuleSetHelper : RegexReplacer.Shared.RuleSetHelper
     {
-        private const string RulSetNames = "[RuleSetNames]";
+        private const string RulSetNamesCookie = "[RuleSetNames]";
         readonly DataSaveHelper dataSaveHelper;
 
         public RuleSetHelper(IJSRuntime jsRuntime)
@@ -61,7 +61,7 @@ namespace RegexReplacer.Client.Helper
 
         private async Task<List<string>> GetRuleSetNames()
         {
-            var content = await dataSaveHelper.Read(RulSetNames);
+            var content = await dataSaveHelper.Read(RulSetNamesCookie);
             var allRuleSetNames = JsonConvert.DeserializeObject<List<string>>(content) ?? new List<string>();
             return allRuleSetNames;
         }
@@ -69,7 +69,7 @@ namespace RegexReplacer.Client.Helper
         private async Task SetRuleSetNamesAsync(List<string> names)
         {
             var content = JsonConvert.SerializeObject(names);
-            await dataSaveHelper.Save(RulSetNames, content);
+            await dataSaveHelper.Save(RulSetNamesCookie, content);
         }
     }
 }

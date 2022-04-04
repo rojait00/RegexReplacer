@@ -1,18 +1,25 @@
 ﻿@page "/"
 @using RegexReplacer.Client.Helper
+@using System.Text.RegularExpressions
 @inject IJSRuntime jsRuntime
 
 <PageTitle>Index</PageTitle>
 
-<RadzenSplitter Style="height:100%; width:100%;">
+<RadzenSplitter class="full-h, full-w">
     <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
-        <RadzenTextArea @bind-Value=@input Style="height:100%; width:100%;"  Change=@(args => OnChange())></RadzenTextArea>
+        <RadzenTextArea @bind-Value=@input class="full-h, full-w" Change=@(args => OnChange())></RadzenTextArea>
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="20%" Min="30px" Max="90%">
-        <RadzenTextBox @bind-Value=@name Style="width:100%;"></RadzenTextBox>
+        <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        @bind-Value=@selectedSets Multiple="true" Placeholder="Select Rule Set..." Data=@ruleSetHelper?.GetRuleSetNames(false) Class="full-w" />
+
+        <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        @bind-Value=@selectedOptions Multiple="true" Placeholder="Select Regex Options..." 
+                        Data=@regexOptions Class="full-w" />
+
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
-        <RadzenTextArea @bind-Value=@output ReadOnly=true Style="height:100%; width:100%;"></RadzenTextArea>
+        <RadzenTextArea @bind-Value=@output ReadOnly=true class="full-h, full-w"></RadzenTextArea>
     </RadzenSplitterPane>
 </RadzenSplitter>
 
@@ -20,10 +27,15 @@
 @code
 {
     string input = "";
-    string name = RuleSetHelper.All;
     string output = "";
 
-    RuleSetHelper ruleSetHelper;
+    RuleSetHelper? ruleSetHelper;
+
+    IEnumerable<string> selectedSets = new List<string>() { RuleSetHelper.All };
+
+    IEnumerable<RegexOptions> selectedOptions = new List<RegexOptions>() { RegexOptions.IgnoreCase };
+    IEnumerable<RegexOptions> regexOptions = (RegexOptions[])Enum.GetValues(typeof(RegexOptions));
+
 
     protected override void OnInitialized()
     {
@@ -33,6 +45,10 @@
 
     public void OnChange()
     {
-        output = ruleSetHelper.Generate(input, name);
+        if(ruleSetHelper == null)
+            return;
+
+        ruleSetHelper.SelectedRegexOptions = selectedOptions;
+        output = ruleSetHelper.Generate(input, selectedSets) ?? string.Empty;
     }
 }

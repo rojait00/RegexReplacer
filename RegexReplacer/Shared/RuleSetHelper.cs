@@ -11,12 +11,24 @@ namespace RegexReplacer.Shared
         List<RuleSet> ruleSets = new();
 
         public List<RuleSet> RuleSets { set => ruleSets = value; }
+        public List<string> RuleSetNames { get => ruleSets.Select(x => x.Name).ToList(); }
+
+        public IEnumerable<RegexOptions> SelectedRegexOptions { get; set; } = new List<RegexOptions>() { RegexOptions.IgnoreCase };
+
 
         public virtual void AddRulesetsToCollection(IObjectCollection items, bool isEditMode)
         {
+            List<string> newItems = GetRuleSetNames(isEditMode);
+
             items.Clear();
-            items.Add(isEditMode ? NewFile : All);
-            items.AddRange(ruleSets.Select(x => x.Name));
+            items.AddRange(newItems);
+        }
+
+        public List<string> GetRuleSetNames(bool isEditMode)
+        {
+            var newItems = ruleSets.Select(x => x.Name).ToList();
+            newItems.Add(isEditMode ? NewFile : All);
+            return newItems;
         }
 
         public static List<RuleSet> GetRuleSetsFromJson(IEnumerable<string> jsons)
@@ -32,6 +44,22 @@ namespace RegexReplacer.Shared
             return ruleSets.FirstOrDefault(x => x.Name.ToLower() == name.ToLower()) ?? new RuleSet(name);
         }
 
+        public string Generate(string content, IEnumerable<string> ruleSetNames)
+        {
+            var lowerNames = ruleSetNames.Select(x => x.ToLower()).ToList();
+            if (lowerNames.Contains(All.ToLower()))
+            {
+                return Generate(content, All);
+            }
+            else
+            {
+                var result = content;
+                lowerNames.ForEach(x => result = Generate(result, x));
+                return result;
+            }
+
+        }
+
         public string Generate(string content, string ruleSetName)
         {
             ruleSetName = ruleSetName.ToLower();
@@ -45,11 +73,14 @@ namespace RegexReplacer.Shared
             return content;
         }
 
-        private static string Replace(string input, string replace, string with)
+        private string Replace(string input, string replace, string with)
         {
             try
             {
-                return Regex.Replace(input, replace, with, RegexOptions.IgnoreCase);
+                RegexOptions options = RegexOptions.None;
+                SelectedRegexOptions.ToList().ForEach(x => options |= x);
+
+                return Regex.Replace(input, replace, with, options);
             }
             catch (Exception ex)
             {

@@ -13,9 +13,18 @@
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                         @bind-Value=@selectedSets Multiple="true" Placeholder="Select Rule Set..." Data=@ruleSetHelper?.GetRuleSetNames(false) Class="full-w" />
 
+        @*<RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+            @bind-Value=@selectedOptions Multiple="true" Placeholder="Select Regex Options..."
+            Data=@regexOptions Class="full-w" />*@
+
+        @*<RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        @bind-Value=@selectedOptions Multiple="true" Data=@regexOptions TextProperty="Name" ValueProperty="Value"
+                        Placeholder="Select Regex Option..." Class="full-w">
+        </RadzenDropDown>*@
+
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        @bind-Value=@selectedOptions Multiple="true" Placeholder="Select Regex Options..." 
-                        Data=@regexOptions Class="full-w" />
+                            @bind-Value=@selectedOptions Multiple="true" Data=@regexOptions TextProperty="Name" ValueProperty="Value"
+                           Placeholder="Select Regex Option..." Class="full-w"/>
 
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
@@ -33,8 +42,8 @@
 
     IEnumerable<string> selectedSets = new List<string>() { RuleSetHelper.All };
 
-    IEnumerable<RegexOptions> selectedOptions = new List<RegexOptions>() { RegexOptions.IgnoreCase };
-    IEnumerable<RegexOptions> regexOptions = (RegexOptions[])Enum.GetValues(typeof(RegexOptions));
+    IEnumerable<int> selectedOptions = new List<int>() { (int)RegexOptions.IgnoreCase };
+    IEnumerable<RegexOptionsHelper> regexOptions = GetOptions();
 
 
     protected override void OnInitialized()
@@ -45,10 +54,16 @@
 
     public void OnChange()
     {
-        if(ruleSetHelper == null)
+        if (ruleSetHelper == null)
             return;
 
-        ruleSetHelper.SelectedRegexOptions = selectedOptions;
-        output = ruleSetHelper.Generate(input, selectedSets) ?? string.Empty;
+        ruleSetHelper.SelectedRegexOptions = selectedOptions.Select(x => RegexOptionsHelper.GetByValue(x));
+        output = ruleSetHelper?.Generate(input, selectedSets) ?? string.Empty;
     }
+
+    private static IEnumerable<RegexOptionsHelper> GetOptions()
+    {
+        return ((RegexOptions[])Enum.GetValues(typeof(RegexOptions))).Select(x => new RegexOptionsHelper(x));
+    }
+
 }

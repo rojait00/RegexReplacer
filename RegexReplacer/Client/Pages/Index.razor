@@ -23,7 +23,7 @@
         </RadzenDropDown>*@
 
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                            @bind-Value=@selectedOptions Multiple="true" Data=@regexOptions TextProperty="Name" ValueProperty="Value"
+                           @bind-Value=@selectedOptions Multiple="true" Data=@regexOptions TextProperty="Name" ValueProperty="Value"
                            Placeholder="Select Regex Option..." Class="full-w"/>
 
     </RadzenSplitterPane>
@@ -42,8 +42,8 @@
 
     IEnumerable<string> selectedSets = new List<string>() { RuleSetHelper.All };
 
-    IEnumerable<int> selectedOptions = new List<int>() { (int)RegexOptions.IgnoreCase };
-    IEnumerable<RegexOptionsHelper> regexOptions = GetOptions();
+    IEnumerable<RegexOptionsClass> selectedOptions = new [] { new RegexOptionsClass(RegexOptions.IgnoreCase) };
+    IEnumerable<RegexOptionsClass> regexOptions = GetOptions();
 
 
     protected override void OnInitialized()
@@ -57,13 +57,25 @@
         if (ruleSetHelper == null)
             return;
 
-        ruleSetHelper.SelectedRegexOptions = selectedOptions.Select(x => RegexOptionsHelper.GetByValue(x));
+        ruleSetHelper.SelectedRegexOptions = selectedOptions.Select(x => x.Option);
         output = ruleSetHelper?.Generate(input, selectedSets) ?? string.Empty;
     }
 
-    private static IEnumerable<RegexOptionsHelper> GetOptions()
+    private static IEnumerable<RegexOptionsClass> GetOptions()
     {
-        return ((RegexOptions[])Enum.GetValues(typeof(RegexOptions))).Select(x => new RegexOptionsHelper(x));
+        return ((RegexOptions[])Enum.GetValues(typeof(RegexOptions))).Select(x => new RegexOptionsClass(x));
     }
 
+    class RegexOptionsClass
+    {
+        public RegexOptionsClass(RegexOptions option)
+        {
+            Option = option;
+        }
+
+        public int Value { get { return (int)Option; } }
+        public string Name { get { return Option.ToString(); } }
+
+        public RegexOptions Option { get; }
+    }
 }

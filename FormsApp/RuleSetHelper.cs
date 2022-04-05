@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace RegexReplacer.FormsApp
 {
-    internal partial class RuleSetHelper : Shared.RuleSetHelper
+    internal partial class RuleSetHelper : Shared.RuleSetHelperBase
     {
         public virtual string Path { get => "C:\\Replacements"; }
 

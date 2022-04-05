@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace RegexReplacer.Shared
 {
-    public partial class RuleSetHelper
+    public partial class RuleSetHelperBase
     {
         public const string All = "[All]";
         public const string NewFile = "[New]";
@@ -21,7 +21,7 @@ namespace RegexReplacer.Shared
             List<string> newItems = GetRuleSetNames();
 
             items.Clear();
-            
+
             items.Add(isEditMode ? NewFile : All);
             items.AddRange(newItems);
         }
@@ -29,11 +29,6 @@ namespace RegexReplacer.Shared
         public List<string> GetRuleSetNames()
         {
             var newItems = ruleSets.Select(x => x.Name).ToList();
-            newItems.Add("test1");
-            newItems.Add("test2");
-            newItems.Add("test3");
-            newItems.Add("test4");
-            newItems.Add("test5");
             return newItems;
         }
 
@@ -71,22 +66,37 @@ namespace RegexReplacer.Shared
             ruleSetName = ruleSetName.ToLower();
 
             var rules = ruleSets.Where(x => ruleSetName == All.ToLower() || ruleSetName == x.Name.ToLower())
-                                .SelectMany(x => x.ReplaceWith)
+                                .SelectMany(x => x.Rules)
                                 .ToList();
 
-            rules.ForEach(x => content = Replace(content, x.Key, x.Value));
+            rules.ForEach(x => content = Generate(content, x.Replace, x.With, x.Function));
 
             return content;
         }
 
-        private string Replace(string input, string replace, string with)
+        private string Generate(string input, string replace, string with, RegexFunction function)
         {
             try
             {
                 RegexOptions options = RegexOptions.None;
                 SelectedRegexOptions.ToList().ForEach(x => options |= x);
 
-                return Regex.Replace(input, replace, with, options);
+                var result = input;
+                switch (function)
+                {
+                    case RegexFunction.Replace:
+                        result = Regex.Replace(input, replace, with, options);
+                        break;
+                    case RegexFunction.List:
+                        var matches = Regex.Matches(input, replace, options);
+                        var newValues =  matches.Cast<Match>().ToList()
+                                                .Select(x => Regex.Replace(x.Value, replace, with, options));
+                        result = string.Join("", newValues);
+                        break;
+                    default:
+                        break;
+                }
+                return result;
             }
             catch (Exception ex)
             {

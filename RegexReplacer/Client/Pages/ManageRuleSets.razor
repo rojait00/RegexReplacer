@@ -1,57 +1,231 @@
-﻿@page "/fetchdata"
+﻿@page "/managerulesets"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+@using RegexReplacer.Client.Helper
 @using RegexReplacer.Shared
-@attribute [Authorize]
+
 @inject HttpClient Http
+@inject IJSRuntime jsRuntime
+@inject NotificationService notificationService
 
-<PageTitle>Weather forecast</PageTitle>
+<PageTitle>Manage Rule Sets</PageTitle>
 
-<h1>Weather forecast</h1>
+<AuthorizeView>
+    <NotAuthorized>
+        <h5>You are not logged in. Consider to log in or create an account to be able to upload your rule sets to the cloud.</h5>
+        <a href="authentication/register">Register</a>
+        <a href="authentication/login">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
 
-<p>This component demonstrates fetching data from the server.</p>
+<RadzenTextBox @bind-Value=name></RadzenTextBox>
+<RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="Add New Rule Set" Click="@InsertRow" Disabled=@(ruleSetToInsert != null) />
 
-@if (forecasts == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<RadzenDataGrid @ref="ruleSetGrid" AllowFiltering="true" AllowPaging="true" PageSize="20" AllowSorting="true" EditMode="DataGridEditMode.Multiple"
+                Data="@ruleSets" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" TItem="RuleSet">
+    <Columns>
+        <RadzenDataGridColumn Property="Name" Title="Name" TItem="RuleSet" Width="80%">
+            <EditTemplate Context="ruleSet">
+                <RadzenTextBox @bind-Value="ruleSet.Name" Style="width:100%; display: block" Name="Name" />
+                <RadzenRequiredValidator Text="Required!" Component="Name" Popup="true" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="RuleSet" Context="sampleBlazorModelsSampleRuleSet" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="10%">
+            <Template Context="ruleSet">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(ruleSet))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="ruleSet">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(ruleSet))">
+                </RadzenButton>
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@((args) => CancelEdit(ruleSet))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="RuleSet" Context="ruleSet" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="5%">
+            <Template Context="ruleSet">
+                <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="upload" Class="m-1" Click="@(args => Upload(ruleSet))" />
+            </Template>
+            <EditTemplate Context="ruleSet">
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="RuleSet" Context="ruleSet" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="5%">
+            <Template Context="ruleSet">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Class="m-1" Click="@(args => DeleteRow(ruleSet))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="ruleSet">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Class="m-1" Click="@(args => DeleteRow(ruleSet))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private List<RuleSet> localRuleSets = new();
+    private List<RuleSet> remoteRuleSets = new();
+
+    RuleSet? ruleSetToInsert = null;
+
+    RuleSetHelper? ruleSetHelper;
+
+    RadzenDataGrid<RuleSet>? ruleSetGrid;
+    IList<RuleSet> ruleSets = new List<RuleSet>();
+
+    string name = "";
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
+        ruleSetHelper = new RuleSetHelper(jsRuntime);
+        var localRuleSetNames = ruleSetHelper.GetRuleSetNames();
+        localRuleSets = localRuleSetNames.Select(x => new RuleSet(x)).ToList();
+
         try
         {
-            forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+            var newRuleSets = await Http.GetFromJsonAsync<RuleSet[]>("RuleSet") ?? Array.Empty<RuleSet>();
+            remoteRuleSets.AddRange(newRuleSets);
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            notificationService.Notify(new NotificationMessage
+                {
+                    Summary = "Could not load cloud Rule Sets",
+                    Detail = exception.Message,
+                    Severity = NotificationSeverity.Warning,
+                    Duration = 3000
+                });
         }
+    }
+
+
+
+    //public async Task Save()
+    //{
+    //    if (ruleSetHelper == null || ruleSetGrid == null)
+    //        return;
+
+    //    await ruleSetHelper.SaveFileAsync(name, , notificationService);
+    //}
+
+    async Task EditRow(RuleSet ruleSet)
+    {
+        if (ruleSetGrid == null)
+            return;
+
+        await ruleSetGrid.EditRow(ruleSet);
+    }
+
+    async Task OnUpdateRow(RuleSet ruleSet)
+    {
+        if (ruleSet == ruleSetToInsert)
+        {
+            ruleSetToInsert = null;
+        }
+
+        await AddOrUpdateAsync(ruleSet);
+    }
+
+    async Task SaveRow(RuleSet ruleSet)
+    {
+        if (ruleSetGrid == null)
+            return;
+
+        if (ruleSet == ruleSetToInsert)
+        {
+            ruleSetToInsert = null;
+        }
+
+        await ruleSetGrid.UpdateRow(ruleSet);
+    }
+
+    void CancelEdit(RuleSet ruleSet)
+    {
+        if (ruleSetGrid == null)
+            return;
+
+        if (ruleSet == ruleSetToInsert)
+        {
+            ruleSetToInsert = null;
+        }
+
+        ruleSetGrid.CancelEditRow(ruleSet);
+    }
+
+    async Task DeleteRow(RuleSet ruleSet)
+    {
+        if (ruleSetGrid == null)
+            return;
+
+        if (ruleSet == ruleSetToInsert)
+        {
+            ruleSetToInsert = null;
+        }
+
+        if (ruleSets.Contains(ruleSet))
+        {
+            ruleSets.Remove(ruleSet);
+
+            await ruleSetGrid.Reload();
+        }
+        else
+        {
+            ruleSetGrid.CancelEditRow(ruleSet);
+        }
+    }
+
+
+    async Task InsertRow()
+    {
+        if (ruleSetGrid == null)
+            return;
+
+        ruleSetToInsert = new RuleSet(name);
+        await ruleSetGrid.InsertRow(ruleSetToInsert);
+    }
+
+    private async Task AddOrUpdateAsync(RuleSet ruleSet)
+    {
+        if (ruleSetGrid == null)
+            return;
+
+        var tempRule = ruleSets.FirstOrDefault(x => x.Id == ruleSet.Id);
+        if (tempRule != null)
+        {
+            tempRule.Update(ruleSet);
+            await ruleSetGrid.UpdateRow(ruleSet);
+        }
+        else
+        {
+            ruleSets.Add(ruleSet);
+            await ruleSetGrid.UpdateRow(ruleSet);
+        }
+        await ruleSetGrid.Reload();
+    }
+
+    async Task OnCreateRow(RuleSet ruleSet)
+    {
+        await AddOrUpdateAsync(ruleSet);
+    }
+    
+    async Task Upload(RuleSet ruleSet)
+    {
+        // ToDo: Upload
+    }
+    
+    async Task Download(RuleSet ruleSet)
+    {
+        // ToDo: Download
+    }
+
+    private static List<RegexFunction> GetFunctions()
+    {
+        var values = (RegexFunction[])Enum.GetValues(typeof(RegexFunction));
+        return values.ToList();
     }
 }

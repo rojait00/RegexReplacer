@@ -45,7 +45,7 @@ namespace RegexReplacer.FormsApp
 
         private void UpdateGui()
         {
-            if (RuleSetName.ToLower() == Shared.RuleSetHelper.NewFile.ToLower())
+            if (RuleSetName.ToLower() == Shared.RuleSetHelperBase.NewFile.ToLower())
             {
                 RuleSetName = "";
             }
@@ -56,15 +56,15 @@ namespace RegexReplacer.FormsApp
         {
             dataGridView.Rows.Clear();
 
-            var emptyRows = Enumerable.Range(0, replaceValues.ReplaceWith.Count).Select(x => new DataGridViewRow()).ToArray();
+            var emptyRows = Enumerable.Range(0, replaceValues.Rules.Count).Select(x => new DataGridViewRow()).ToArray();
             dataGridView.Rows.AddRange(emptyRows);
 
-            for (int i = 0; i < replaceValues.ReplaceWith.Count; i++)
+            for (int i = 0; i < replaceValues.Rules.Count; i++)
             {
-                var replaceWith = replaceValues.ReplaceWith.ElementAt(i);
+                var replaceWith = replaceValues.Rules.ElementAt(i);
 
-                dataGridView.Rows[i].Cells[0].Value = replaceWith.Key;
-                dataGridView.Rows[i].Cells[1].Value = replaceWith.Value;
+                dataGridView.Rows[i].Cells[0].Value = replaceWith.Replace;
+                dataGridView.Rows[i].Cells[1].Value = replaceWith.With;
             }
         }
 

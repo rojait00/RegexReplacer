@@ -40,7 +40,9 @@
     {
         ruleSetHelper = new RuleSetHelper(jsRuntime);
         ruleSets = ruleSetHelper.GetRuleSetNames();
-        selectedRuleSets = ruleSets;
+        selectedRuleSets = ruleSets.ToList();
+        ruleSetHelper.SelectedRegexOptions = selectedOptions;
+
         base.OnInitialized();
     }
 

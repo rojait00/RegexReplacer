@@ -36,7 +36,7 @@ namespace RegexReplacer.FormsApp
                 StartPosition = FormStartPosition.CenterParent
             };
 
-            if (comboBoxRuleSets.Text != Shared.RuleSetHelper.All)
+            if (comboBoxRuleSets.Text != Shared.RuleSetHelperBase.All)
             {
                 settings.RuleSetName = comboBoxRuleSets.Text;
             }

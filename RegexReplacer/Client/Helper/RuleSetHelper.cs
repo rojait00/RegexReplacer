@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace RegexReplacer.Client.Helper
 {
-    internal partial class RuleSetHelper : RegexReplacer.Shared.RuleSetHelper
+    internal partial class RuleSetHelper : RegexReplacer.Shared.RuleSetHelperBase
     {
         private const string RulSetNamesCookie = "[RuleSetNames]";
         readonly DataSaveHelper dataSaveHelper;
@@ -28,7 +28,7 @@ namespace RegexReplacer.Client.Helper
         }
 
 
-        public async Task<bool> SaveFileAsync(string name, Dictionary<string, string> replaceWith, NotificationService notificationService)
+        public async Task<bool> SaveFileAsync(string name, IList<Rule> rules, NotificationService notificationService)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -40,7 +40,7 @@ namespace RegexReplacer.Client.Helper
                 var replacement = new RuleSet
                 {
                     Name = name,
-                    ReplaceWith = replaceWith
+                    Rules = rules
                 };
 
                 var names = await LoadRuleSetNames();

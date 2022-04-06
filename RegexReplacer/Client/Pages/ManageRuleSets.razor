@@ -69,14 +69,14 @@
     private List<RuleSet> localRuleSets = new();
     private List<RuleSet> remoteRuleSets = new();
 
-    RuleSet? ruleSetToInsert = null;
 
     RuleSetHelper? ruleSetHelper;
+    string name = "";
 
     RadzenDataGrid<RuleSet>? ruleSetGrid;
     IList<RuleSet> ruleSets = new List<RuleSet>();
+    RuleSet? ruleSetToInsert = null;
 
-    string name = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,16 +102,6 @@
                 });
         }
     }
-
-
-
-    //public async Task Save()
-    //{
-    //    if (ruleSetHelper == null || ruleSetGrid == null)
-    //        return;
-
-    //    await ruleSetHelper.SaveFileAsync(name, , notificationService);
-    //}
 
     async Task EditRow(RuleSet ruleSet)
     {

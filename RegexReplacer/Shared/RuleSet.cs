@@ -1,8 +1,9 @@
 ﻿using Newtonsoft.Json;
+using RegexReplacer.Shared.DisplayHelper;
 
 namespace RegexReplacer.Shared
 {
-    public class RuleSet
+    public class RuleSet : UpdatableBase
     {
         /// <summary>
         /// Should be used in Code
@@ -19,19 +20,6 @@ namespace RegexReplacer.Shared
         public RuleSet()
         { }
 
-        public static RuleSet GetDemoRuleSet()
-        {
-            return new RuleSet
-            {
-                Id = Guid.Empty,
-                Name = "Demo",
-                Rules = new List<Rule> {
-                    new Rule("test","test1", RegexFunction.Replace),
-                    new Rule("a","b", RegexFunction.Replace),
-                    new Rule("12\\d456","123456", RegexFunction.Replace)
-                }
-            };
-        }
 
         /// <summary>
         /// Used to avoid Warning caused by JsonConvert
@@ -46,21 +34,20 @@ namespace RegexReplacer.Shared
 
         public bool IsNull { get; } = false;
 
-        [Obsolete]
-        public Dictionary<string, string> ReplaceWith
-        {
-            get { return Rules.ToDictionary(x => x.Replace, x => x.With); }
-            set { Rules = value.Select(x => new Rule(x.Key, x.Value, RegexFunction.Replace)).ToList(); }
-        }
-
         public IList<Rule> Rules { get; set; } = new List<Rule>();
 
-        public Guid Id { get; set; } = Guid.NewGuid();
-
-        public void Update(RuleSet ruleSet)
+        public static RuleSet GetDemoRuleSet()
         {
-            Name = ruleSet.Name;
-            Rules = ruleSet.Rules;
+            return new RuleSet
+            {
+                Id = Guid.Empty,
+                Name = "Demo",
+                Rules = new List<Rule> {
+                    new Rule("test","test1", RegexFunction.Replace),
+                    new Rule("a","b", RegexFunction.Replace),
+                    new Rule("12\\d456","123456", RegexFunction.Replace)
+                }
+            };
         }
     }
 }

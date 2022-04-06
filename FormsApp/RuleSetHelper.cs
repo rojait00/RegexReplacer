@@ -32,7 +32,7 @@ namespace RegexReplacer.FormsApp
                 var replacement = new RuleSet
                 {
                     Name = name,
-                    ReplaceWith = replaceWith
+                    Rules = replaceWith.Select(x => new Rule(x.Key, x.Value, RegexFunction.Replace)).ToList()
                 };
 
                 var path = System.IO.Path.Combine(Path, replacement.Name + ".json");

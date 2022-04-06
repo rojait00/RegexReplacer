@@ -1,3 +1,7 @@
+using RegexReplacer.Shared;
+using RegexReplacer.Shared.DisplayHelper;
+using System.Reflection;
+
 namespace RegexReplacer.FormsApp
 {
     internal static class Program

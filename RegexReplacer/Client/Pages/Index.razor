@@ -12,11 +12,11 @@
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="20%" Min="30px" Max="90%">
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        Placeholder="Select Rule Set..." Multiple="true" Class="full-w"
+                        Placeholder="Select Rule Set..." Multiple="true" Class="full-w" SelectedItemChanged=@((args) => OnChange())
                         @bind-Value=@selectedRuleSets Data=@ruleSets TextProperty="Name"/>
 
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        Placeholder="Select Option..." Multiple="true" Class="full-w"
+                        Placeholder="Select Option..." Multiple="true" Class="full-w" SelectedItemChanged=@((args) => OnChange())
                         @bind-Value=@selectedOptions Data=@regexOptions />
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="40%" Min="30px" Max="90%">

@@ -2,7 +2,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
+@using RadzenHelper.Views
 @using RegexReplacer.Client.Helper
+@using RegexReplacer.Client.ListViewItems
 @using RegexReplacer.Shared
 
 @inject HttpClient Http
@@ -19,72 +21,28 @@
     </NotAuthorized>
 </AuthorizeView>
 
-<RadzenTextBox @bind-Value=name></RadzenTextBox>
-<RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="Add New Rule Set" Click="@InsertRow" Disabled=@(ruleSetToInsert != null) />
 
-<RadzenDataGrid @ref="ruleSetGrid" AllowFiltering="true" AllowPaging="true" PageSize="20" AllowSorting="true" EditMode="DataGridEditMode.Multiple"
-                Data="@ruleSets" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" TItem="RuleSet">
-    <Columns>
-        <RadzenDataGridColumn Property="Name" Title="Name" TItem="RuleSet" Width="80%">
-            <EditTemplate Context="ruleSet">
-                <RadzenTextBox @bind-Value="ruleSet.Name" Style="width:100%; display: block" Name="Name" />
-                <RadzenRequiredValidator Text="Required!" Component="Name" Popup="true" />
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="RuleSet" Context="sampleBlazorModelsSampleRuleSet" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="10%">
-            <Template Context="ruleSet">
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(ruleSet))" @onclick:stopPropagation="true">
-                </RadzenButton>
-            </Template>
-            <EditTemplate Context="ruleSet">
-                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(ruleSet))">
-                </RadzenButton>
-                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@((args) => CancelEdit(ruleSet))">
-                </RadzenButton>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="RuleSet" Context="ruleSet" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="5%">
-            <Template Context="ruleSet">
-                <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="upload" Class="m-1" />
-            </Template>
-            <EditTemplate Context="ruleSet">
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="RuleSet" Context="ruleSet" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="5%">
-            <Template Context="ruleSet">
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Class="m-1" Click="@(args => DeleteRow(ruleSet))" @onclick:stopPropagation="true">
-                </RadzenButton>
-            </Template>
-            <EditTemplate Context="ruleSet">
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Class="m-1" Click="@(args => DeleteRow(ruleSet))">
-                </RadzenButton>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-    </Columns>
-</RadzenDataGrid>
+<EasyListView TItem="RuleSet" Items="localRuleSets">
+
+</EasyListView>
+
+
 
 
 
 @code {
-    private List<RuleSet> localRuleSets = new();
+    private RuleSetListViewItems localRuleSets = new RuleSetListViewItems();
     private List<RuleSet> remoteRuleSets = new();
 
 
     RuleSetHelper? ruleSetHelper;
-    string name = "";
-
-    RadzenDataGrid<RuleSet>? ruleSetGrid;
-    IList<RuleSet> ruleSets = new List<RuleSet>();
-    RuleSet? ruleSetToInsert = null;
-
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        ruleSetHelper = new RuleSetHelper(jsRuntime);
-        var localRuleSetNames = ruleSetHelper.RuleSets;
-        localRuleSets = localRuleSetNames.ToList();
+        ruleSetHelper = await RuleSetHelper.GetRuleSetHelper(jsRuntime);
+        await localRuleSets.Init(ruleSetHelper, notificationService);
 
         try
         {
@@ -103,105 +61,7 @@
         }
     }
 
-    async Task EditRow(RuleSet ruleSet)
-    {
-        if (ruleSetGrid == null)
-            return;
-
-        await ruleSetGrid.EditRow(ruleSet);
-    }
-
-    async Task OnUpdateRow(RuleSet ruleSet)
-    {
-        if (ruleSet == ruleSetToInsert)
-        {
-            ruleSetToInsert = null;
-        }
-
-        await AddOrUpdateAsync(ruleSet);
-    }
-
-    async Task SaveRow(RuleSet ruleSet)
-    {
-        if (ruleSetGrid == null)
-            return;
-
-        if (ruleSet == ruleSetToInsert)
-        {
-            ruleSetToInsert = null;
-        }
-
-        await ruleSetGrid.UpdateRow(ruleSet);
-    }
-
-    void CancelEdit(RuleSet ruleSet)
-    {
-        if (ruleSetGrid == null)
-            return;
-
-        if (ruleSet == ruleSetToInsert)
-        {
-            ruleSetToInsert = null;
-        }
-
-        ruleSetGrid.CancelEditRow(ruleSet);
-    }
-
-    async Task DeleteRow(RuleSet ruleSet)
-    {
-        if (ruleSetGrid == null)
-            return;
-
-        if (ruleSet == ruleSetToInsert)
-        {
-            ruleSetToInsert = null;
-        }
-
-        if (ruleSets.Contains(ruleSet))
-        {
-            ruleSets.Remove(ruleSet);
-
-            await ruleSetGrid.Reload();
-        }
-        else
-        {
-            ruleSetGrid.CancelEditRow(ruleSet);
-        }
-    }
-
-
-    async Task InsertRow()
-    {
-        if (ruleSetGrid == null)
-            return;
-
-        ruleSetToInsert = new RuleSet();
-        await ruleSetGrid.InsertRow(ruleSetToInsert);
-    }
-
-    private async Task AddOrUpdateAsync(RuleSet ruleSet)
-    {
-        if (ruleSetGrid == null)
-            return;
-
-        var tempRule = ruleSets.FirstOrDefault(x => x.Id == ruleSet.Id);
-        if (tempRule != null)
-        {
-            tempRule.Update(ruleSet);
-            await ruleSetGrid.UpdateRow(ruleSet);
-        }
-        else
-        {
-            ruleSets.Add(ruleSet);
-            await ruleSetGrid.UpdateRow(ruleSet);
-        }
-        await ruleSetGrid.Reload();
-    }
-
-    async Task OnCreateRow(RuleSet ruleSet)
-    {
-        await AddOrUpdateAsync(ruleSet);
-    }
+    
     
     //async Task Upload(RuleSet ruleSet)
     //{
@@ -212,10 +72,4 @@
     //{
     //    // ToDo: Download
     //}
-
-    private static List<RegexFunction> GetFunctions()
-    {
-        var values = (RegexFunction[])Enum.GetValues(typeof(RegexFunction));
-        return values.ToList();
-    }
 }

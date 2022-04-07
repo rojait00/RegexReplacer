@@ -14,15 +14,21 @@ namespace RegexReplacer.Client.Helper
     internal partial class RuleSetHelper
     {
         private const string RulSetNamesCookie = "[RuleSetNames]";
-        readonly DataSaveHelper dataSaveHelper;
+        DataSaveHelper dataSaveHelper;
         List<RuleSet> ruleSets = new();
 
         public List<RuleSet> RuleSets { get => ruleSets; }
 
-        public RuleSetHelper(IJSRuntime jsRuntime)
+        private RuleSetHelper(DataSaveHelper dataSaveHelper)
         {
-            dataSaveHelper = new DataSaveHelper(jsRuntime);
-            LoadRuleSetsAsync().Wait();
+            this.dataSaveHelper = dataSaveHelper;
+        }
+
+        public static async Task<RuleSetHelper> GetRuleSetHelper(IJSRuntime jsRuntime)
+        {
+            var helper = new RuleSetHelper(new DataSaveHelper(jsRuntime));
+            await helper.LoadRuleSetsAsync();
+            return helper;
         }
 
         public RuleSet GetRuleSet(Guid id)
@@ -70,7 +76,7 @@ namespace RegexReplacer.Client.Helper
 
         private async Task<List<Guid>> LoadRuleSetIds()
         {
-            var content = await dataSaveHelper.Read(RulSetNamesCookie);
+            var content = await dataSaveHelper.Read(RulSetNamesCookie) ?? "";
             var allRuleSetIds = JsonConvert.DeserializeObject<List<Guid>>(content) ?? new List<Guid>();
             return allRuleSetIds;
         }
@@ -90,9 +96,14 @@ namespace RegexReplacer.Client.Helper
 
             var contents = await Task.WhenAll(tasks);
 
-            ruleSets = contents.Select(x => JsonConvert.DeserializeObject<RuleSet>(x) ?? new RuleSet())
+            ruleSets = contents.Select(x => JsonConvert.DeserializeObject<RuleSet>(x ?? "") ?? new RuleSet())
                                .Where(x => !x.IsNull)
                                .ToList();
+
+            if (!ruleSets.Any())
+            {
+                ruleSets.Add(RuleSet.GetDemoRuleSet());
+            }
         }
 
         private static void ShowErrorMessage(NotificationService notificationService, Exception ex)

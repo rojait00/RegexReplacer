@@ -20,7 +20,7 @@ namespace RegexReplacer.Client.Helper
             await js.InvokeVoidAsync("localStorage.setItem", name, content);
         }
 
-        public async Task<string> Read(string name)
+        public async Task<string?> Read(string name)
         {
             return await js.InvokeAsync<string>("localStorage.getItem", name);
         }

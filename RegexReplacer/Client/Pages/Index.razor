@@ -13,7 +13,7 @@
     <RadzenSplitterPane Size="20%" Min="30px" Max="90%">
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                         Placeholder="Select Rule Set..." Multiple="true" Class="full-w" SelectedItemChanged=@((args) => OnChange())
-                        @bind-Value=@selectedRuleSets Data=@ruleSets TextProperty="Name"/>
+                        @bind-Value=@selectedRuleSets Data=@ruleSets TextProperty="Name" />
 
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                         Placeholder="Select Option..." Multiple="true" Class="full-w" SelectedItemChanged=@((args) => OnChange())
@@ -31,19 +31,19 @@
 
     RuleSetHelper? ruleSetHelper;
 
-    IEnumerable<RegexOptions> regexOptions = GetOptions();
-    IEnumerable<RegexOptions> selectedOptions = new[] { RegexOptions.IgnoreCase };
+    List<RegexOptions> regexOptions = EnumHelper.GetEnums<RegexOptions>();
+    List<RegexOptions> selectedOptions = new() { RegexOptions.IgnoreCase };
 
-    IEnumerable<RuleSet> ruleSets = Array.Empty<RuleSet>();
-    IEnumerable<RuleSet> selectedRuleSets = Array.Empty<RuleSet>();
+    List<RuleSet> ruleSets = new();
+    List<RuleSet> selectedRuleSets = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        ruleSetHelper = new RuleSetHelper(jsRuntime);
+        ruleSetHelper = await RuleSetHelper.GetRuleSetHelper(jsRuntime);
         ruleSets = ruleSetHelper.RuleSets;
         selectedRuleSets = ruleSets.ToList();
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     public void OnChange()
@@ -52,11 +52,5 @@
             return;
 
         output = ruleSetHelper.Generate(input, selectedRuleSets.ToList(), selectedOptions);
-    }
-
-    private static List<RegexOptions> GetOptions()
-    {
-        var values = (RegexOptions[])Enum.GetValues(typeof(RegexOptions));
-        return values.ToList();
     }
 }

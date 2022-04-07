@@ -7,19 +7,20 @@ namespace RegexReplacer.Client.ListViewItems
 {
     internal class RuleSetListViewItems : ListViewItemsBase<RuleSet>
     {
-        private RuleSetHelper helper;
-        private readonly NotificationService notificationService;
+        private RuleSetHelper? helper;
+        private NotificationService? notificationService;
 
-        public RuleSetListViewItems(RuleSetHelper helper, NotificationService notificationService)
+        public async Task Init(RuleSetHelper helper, NotificationService notificationService)
         {
-
             this.helper = helper;
             this.notificationService = notificationService;
-            LoadItems();
+            await LoadItems();
         }
-        public override void LoadItems()
+
+        public override async Task LoadItems()
         {
-            Items = helper.RuleSets;
+            Items = helper?.RuleSets ?? new List<RuleSet>();
+            await base.LoadItems();
         }
 
         public override async Task OnChangedCollectionChanged()

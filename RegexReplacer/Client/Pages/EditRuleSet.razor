@@ -1,6 +1,8 @@
 ﻿@page "/editruleset"
 @using RegexReplacer.Client.Helper
+@using RegexReplacer.Client.ListViewItems
 @using RegexReplacer.Shared
+@using RadzenHelper.Views
 @inject NotificationService notificationService
 @inject IJSRuntime jsRuntime
 @inject NavigationManager navigationManager
@@ -18,189 +20,33 @@ else
 {
     <RadzenDropDown AllowClear="false" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 Placeholder="Select Rule Set Name..." Multiple="false" Class="w-25"
-                @bind-Value=@ruleSet Data=@ruleSets TextProperty="Name"/>
+                @bind-Value=@ruleSet Data=@ruleSets TextProperty="Name" />
     <br />
     <hr />
     <br />
-    <RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="Add New Rule" Click="@InsertRow" Disabled=@(ruleToInsert != null) />
-    <RadzenDataGrid @ref="rulesGrid" AllowFiltering="false" AllowPaging="true" PageSize="20" AllowSorting="false" EditMode="DataGridEditMode.Multiple"
-                Data="@rules" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" TItem="Rule">
-        <Columns>
-            <RadzenDataGridColumn Property="Replace" Title="Replace" TItem="Rule" Width="40%">
-                <EditTemplate Context="rule">
-                    <RadzenTextBox @bind-Value="rule.Replace" Style="width:100%; display: block" Name="Replace" />
-                    <RadzenRequiredValidator Text="Required!" Component="ShipName" Popup="true" />
-                </EditTemplate>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property="With" Title="With" TItem="Rule" Width="40%">
-                <EditTemplate Context="rule">
-                    <RadzenTextBox @bind-Value="rule.With" Style="width:100%; display: block" Name="With" />
-                </EditTemplate>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property="Function" Title="Function" TItem="Rule" Width="220px">
-                <EditTemplate Context="rule">
-                    <RadzenDropDown AllowClear="false" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                Placeholder="Select Function..." Multiple="false" Class="full-w"
-                                @bind-Value=@rule.Function Data=@regexFunctions />
-                </EditTemplate>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Rule" Context="sampleBlazorModelsSampleRule" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="10%">
-                <Template Context="rule">
-                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(rule))" @onclick:stopPropagation="true">
-                    </RadzenButton>
-                </Template>
-                <EditTemplate Context="rule">
-                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(rule))">
-                    </RadzenButton>
-                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@((args) => CancelEdit(rule))">
-                    </RadzenButton>
-                </EditTemplate>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Rule" Context="rule" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="5%">
-                <Template Context="rule">
-                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Class="m-1" Click="@(args => DeleteRow(rule))" @onclick:stopPropagation="true">
-                    </RadzenButton>
-                </Template>
-                <EditTemplate Context="rule">
-                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Class="m-1" Click="@(args => DeleteRow(rule))">
-                    </RadzenButton>
-                </EditTemplate>
-            </RadzenDataGridColumn>
-        </Columns>
-    </RadzenDataGrid>
+    <EasyListView TItem="Rule" Items="items">
+    </EasyListView>
 }
 
 @code {
-    RadzenDataGrid<Rule>? rulesGrid;
-    IList<Rule> rules = new List<Rule>();
-    Rule? ruleToInsert;
-
     RuleSetHelper? ruleSetHelper = null;
 
     IEnumerable<RuleSet> ruleSets = Array.Empty<RuleSet>();
     RuleSet? ruleSet = null;
 
-    IEnumerable<RegexFunction> regexFunctions = GetFunctions();
+    RuleListViewItems items = new RuleListViewItems();
 
-    protected override void OnInitialized()
+    List<RegexFunction> regexFunctions = EnumHelper.GetEnums<RegexFunction>();
+
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
 
-        ruleSetHelper = new RuleSetHelper(jsRuntime);
+        ruleSetHelper = await RuleSetHelper.GetRuleSetHelper(jsRuntime);
         ruleSets = ruleSetHelper.RuleSets;
         ruleSet = ruleSets.FirstOrDefault() ?? new();
+
+        await items.Init(ruleSetHelper, notificationService);
     }
 
-    public async Task Save()
-    {
-        if (ruleSetHelper == null || rulesGrid == null || ruleSet == null)
-            return;
-
-        await ruleSetHelper.SaveRuleSetAsync(ruleSet, notificationService);
-    }
-
-    async Task EditRow(Rule rule)
-    {
-        if (rulesGrid == null)
-            return;
-
-        await rulesGrid.EditRow(rule);
-    }
-
-    async Task OnUpdateRow(Rule rule)
-    {
-        if (rule == ruleToInsert)
-        {
-            ruleToInsert = null;
-        }
-
-        await AddOrUpdateAsync(rule);
-    }
-
-    async Task SaveRow(Rule rule)
-    {
-        if (rulesGrid == null)
-            return;
-
-        if (rule == ruleToInsert)
-        {
-            ruleToInsert = null;
-        }
-
-        await rulesGrid.UpdateRow(rule);
-    }
-
-    void CancelEdit(Rule rule)
-    {
-        if (rulesGrid == null)
-            return;
-
-        if (rule == ruleToInsert)
-        {
-            ruleToInsert = null;
-        }
-
-        rulesGrid.CancelEditRow(rule);
-    }
-
-    async Task DeleteRow(Rule rule)
-    {
-        if (rulesGrid == null)
-            return;
-
-        if (rule == ruleToInsert)
-        {
-            ruleToInsert = null;
-        }
-
-        if (rules.Contains(rule))
-        {
-            rules.Remove(rule);
-
-            await rulesGrid.Reload();
-        }
-        else
-        {
-            rulesGrid.CancelEditRow(rule);
-        }
-    }
-
-
-    async Task InsertRow()
-    {
-        if (rulesGrid == null)
-            return;
-
-        ruleToInsert = new Rule();
-        await rulesGrid.InsertRow(ruleToInsert);
-    }
-
-    private async Task AddOrUpdateAsync(Rule rule)
-    {
-        if (rulesGrid == null)
-            return;
-
-        var tempRule = rules.FirstOrDefault(x => x.Id == rule.Id);
-        if (tempRule != null)
-        {
-            tempRule.Update(rule);
-            await rulesGrid.UpdateRow(rule);
-        }
-        else
-        {
-            rules.Add(rule);
-            await rulesGrid.UpdateRow(rule);
-        }
-        await rulesGrid.Reload();
-    }
-
-    async Task OnCreateRow(Rule rule)
-    {
-        await AddOrUpdateAsync(rule);
-    }
-    private static List<RegexFunction> GetFunctions()
-    {
-        var values = (RegexFunction[])Enum.GetValues(typeof(RegexFunction));
-        return values.ToList();
-    }
 }

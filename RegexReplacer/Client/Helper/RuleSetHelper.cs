@@ -10,48 +10,47 @@ using System.Threading.Tasks;
 
 namespace RegexReplacer.Client.Helper
 {
-    internal partial class RuleSetHelper : RuleSetHelperBase
+    internal partial class RuleSetHelper
     {
         private const string RulSetNamesCookie = "[RuleSetNames]";
         readonly DataSaveHelper dataSaveHelper;
+        List<RuleSet> ruleSets = new();
+
+        public List<RuleSet> RuleSets { get => ruleSets; }
 
         public RuleSetHelper(IJSRuntime jsRuntime)
         {
             dataSaveHelper = new DataSaveHelper(jsRuntime);
+            LoadRuleSetsAsync().Wait();
         }
 
-        public virtual async Task LoadRuleSetsAsync()
+        public RuleSet GetRuleSet(Guid id)
         {
-            List<string> allRuleSetNames = await LoadRuleSetNames();
-            var fileContents = allRuleSetNames.Select(x => dataSaveHelper.Read(x).Result);
-            RuleSets = GetRuleSetsFromJson(fileContents);
+            return ruleSets.FirstOrDefault(x => x.Id == id) ?? new RuleSet();
         }
 
-
-        public async Task<bool> SaveFileAsync(string name, IList<Rule> rules, NotificationService notificationService)
+        public async Task<bool> SaveRuleSetAsync(RuleSet ruleSet, NotificationService notificationService)
         {
-            if (string.IsNullOrWhiteSpace(name))
+            if (ruleSet.Id == Guid.Empty)
             {
-                return false;
+                return true;
             }
 
             try
             {
-                var replacement = new RuleSet
+                var oldRuleSet = ruleSets.FirstOrDefault(x => x.Id == ruleSet.Id);
+                if (oldRuleSet != null)
                 {
-                    Name = name,
-                    Rules = rules
-                };
-
-                var names = await LoadRuleSetNames();
-                if (!names.Contains(name))
+                    oldRuleSet.Update(ruleSet);
+                }
+                else
                 {
-                    names.Add(name);
-                    await SetRuleSetNamesAsync(names);
+                    ruleSets.Add(ruleSet);
+                    await WriteRuleSetIdsAsync();
                 }
 
-                await dataSaveHelper.Save(name, JsonConvert.SerializeObject(replacement));
-                ShowSucessMeesage(name, notificationService);
+                await dataSaveHelper.Save(ruleSet.Id.ToString(), JsonConvert.SerializeObject(ruleSet));
+                ShowSucessMeesage(ruleSet.Name, notificationService);
                 return true;
             }
             catch (Exception ex)
@@ -61,6 +60,33 @@ namespace RegexReplacer.Client.Helper
             }
         }
 
+        private async Task<List<Guid>> LoadRuleSetIds()
+        {
+            var content = await dataSaveHelper.Read(RulSetNamesCookie);
+            var allRuleSetIds = JsonConvert.DeserializeObject<List<Guid>>(content) ?? new List<Guid>();
+            return allRuleSetIds;
+        }
+
+        private async Task WriteRuleSetIdsAsync()
+        {
+            var ids = ruleSets.Select(x => x.Id).ToList();
+            var content = JsonConvert.SerializeObject(ids);
+            await dataSaveHelper.Save(RulSetNamesCookie, content);
+        }
+
+        private async Task LoadRuleSetsAsync()
+        {
+            var allRuleSetIds = await LoadRuleSetIds();
+
+            var tasks = allRuleSetIds.Select(x => dataSaveHelper.Read(x.ToString()));
+
+            var contents = await Task.WhenAll(tasks);
+
+                ruleSets = contents.Select(x => JsonConvert.DeserializeObject<RuleSet>(x) ?? new RuleSet())
+                                   .Where(x => !x.IsNull)
+                                   .ToList();
+        }
+        
         private static void ShowErrorMessage(NotificationService notificationService, Exception ex)
         {
             var message = new NotificationMessage
@@ -83,19 +109,6 @@ namespace RegexReplacer.Client.Helper
                 Duration = 3000
             };
             notificationService.Notify(message);
-        }
-
-        private async Task<List<string>> LoadRuleSetNames()
-        {
-            var content = await dataSaveHelper.Read(RulSetNamesCookie);
-            var allRuleSetNames = JsonConvert.DeserializeObject<List<string>>(content) ?? new List<string>();
-            return allRuleSetNames;
-        }
-
-        private async Task SetRuleSetNamesAsync(List<string> names)
-        {
-            var content = JsonConvert.SerializeObject(names);
-            await dataSaveHelper.Save(RulSetNamesCookie, content);
         }
     }
 }

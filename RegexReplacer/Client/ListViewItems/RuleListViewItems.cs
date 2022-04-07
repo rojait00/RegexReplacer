@@ -28,12 +28,12 @@ namespace RegexReplacer.Client.ListViewItems
 
         public override void LoadItems()
         {
-            RuleSet = helper.GetRuleSet(this.Name);
+            RuleSet = helper.GetRuleSet(RuleSet.Id);
         }
 
         public override async Task OnChangedCollectionChanged()
         {
-            await helper.SaveFileAsync(Name, Items, notificationService);
+            await helper.SaveRuleSetAsync(RuleSet, notificationService);
         }
     }
 }

@@ -7,10 +7,10 @@ namespace RegexReplacer.Shared
         /// <summary>
         /// Should be used in Code
         /// </summary>
-        /// <param name="name"></param>
-        public RuleSet(string name)
+        /// <param name="id"></param>
+        public RuleSet(Guid id)
         {
-            Name = name;
+            Id = id;
         }
 
         /// <summary>
@@ -18,16 +18,6 @@ namespace RegexReplacer.Shared
         /// </summary>
         public RuleSet()
         { }
-
-
-        /// <summary>
-        /// Used to avoid Warning caused by JsonConvert
-        /// </summary>
-        /// <param name="isNull"></param>
-        internal RuleSet(bool isNull)
-        {
-            IsNull = isNull;
-        }
 
         public string Name { get; set; } = "";
 

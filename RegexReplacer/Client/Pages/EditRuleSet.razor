@@ -18,7 +18,7 @@ else
 {
     <RadzenDropDown AllowClear="false" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 Placeholder="Select Rule Set Name..." Multiple="false" Class="w-25"
-                @bind-Value=@name Data=@ruleSets />
+                @bind-Value=@ruleSet Data=@ruleSets TextProperty="Name"/>
     <br />
     <hr />
     <br />
@@ -76,18 +76,19 @@ else
     Rule? ruleToInsert;
 
     RuleSetHelper? ruleSetHelper = null;
-    string name = string.Empty;
+
+    IEnumerable<RuleSet> ruleSets = Array.Empty<RuleSet>();
+    RuleSet ruleSet = null;
 
     IEnumerable<RegexFunction> regexFunctions = GetFunctions();
-    IEnumerable<string> ruleSets = Array.Empty<string>();
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
         ruleSetHelper = new RuleSetHelper(jsRuntime);
-        ruleSets = ruleSetHelper.GetRuleSetNames();
-        name = ruleSets.FirstOrDefault() ?? string.Empty;
+        ruleSets = ruleSetHelper.RuleSets;
+        ruleSet = ruleSets.FirstOrDefault() ?? new();
     }
 
     public async Task Save()
@@ -95,7 +96,7 @@ else
         if (ruleSetHelper == null || rulesGrid == null)
             return;
 
-        await ruleSetHelper.SaveFileAsync(name, rulesGrid.Value, notificationService);
+        await ruleSetHelper.SaveRuleSetAsync(ruleSet, notificationService);
     }
 
     async Task EditRow(Rule rule)

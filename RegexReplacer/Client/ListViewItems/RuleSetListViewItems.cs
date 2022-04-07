@@ -19,9 +19,7 @@ namespace RegexReplacer.Client.ListViewItems
         }
         public override void LoadItems()
         {
-            Items = helper.GetRuleSetNames()
-                             .Select(x => helper.GetRuleSet(x))
-                             .ToList();
+            Items = helper.RuleSets;
         }
 
         public override async Task OnChangedCollectionChanged()

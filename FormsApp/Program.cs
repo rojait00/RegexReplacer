@@ -1,6 +1,3 @@
-using RegexReplacer.Shared;
-using RegexReplacer.Shared.DisplayHelper;
-using System.Reflection;
 
 namespace RegexReplacer.FormsApp
 {

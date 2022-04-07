@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace RegexReplacer.Client.Helper
 {
-    internal partial class RuleSetHelper : RegexReplacer.Shared.RuleSetHelperBase
+    internal partial class RuleSetHelper : RuleSetHelperBase
     {
         private const string RulSetNamesCookie = "[RuleSetNames]";
         readonly DataSaveHelper dataSaveHelper;

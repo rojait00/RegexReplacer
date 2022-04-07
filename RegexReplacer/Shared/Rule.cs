@@ -1,4 +1,4 @@
-﻿using RegexReplacer.Shared.DisplayHelper;
+﻿using RadzenHelper;
 
 namespace RegexReplacer.Shared
 {

@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
-using RegexReplacer.Shared.DisplayHelper;
-
+using RadzenHelper;
 namespace RegexReplacer.Shared
 {
     public class RuleSet : UpdatableBase

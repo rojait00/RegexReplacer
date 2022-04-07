@@ -5,9 +5,6 @@ namespace RegexReplacer.Shared
 {
     public partial class RuleSetHelperBase
     {
-        public const string All = "[All]";
-        public const string NewFile = "[New]";
-
         List<RuleSet> ruleSets = new();
 
         public List<RuleSet> RuleSets { set => ruleSets = value; }
@@ -15,18 +12,7 @@ namespace RegexReplacer.Shared
 
         public IEnumerable<RegexOptions> SelectedRegexOptions { get; set; } = new List<RegexOptions>() { RegexOptions.IgnoreCase };
 
-
-        public virtual void AddRulesetsToCollection(IObjectCollection items, bool isEditMode)
-        {
-            List<string> newItems = GetRuleSetNames();
-
-            items.Clear();
-
-            items.Add(isEditMode ? NewFile : All);
-            items.AddRange(newItems);
-        }
-
-        public List<string> GetRuleSetNames()
+        public List<string> GetRuleSetIds()
         {
             var newItems = ruleSets.Select(x => x.Name).ToList();
             return newItems;
@@ -40,24 +26,19 @@ namespace RegexReplacer.Shared
             return rules;
         }
 
-        public RuleSet GetRuleSet(string name)
+        public RuleSet GetRuleSet(string id)
         {
-            return ruleSets.FirstOrDefault(x => x.Name.ToLower() == name.ToLower()) ?? new RuleSet(name);
+            return ruleSets.FirstOrDefault(x => x.Id.ToString() == id.ToLower()) ?? new RuleSet();
         }
+
+
 
         public string Generate(string content, IEnumerable<string> ruleSetNames)
         {
             var lowerNames = ruleSetNames.Select(x => x.ToLower()).ToList();
-            if (lowerNames.Contains(All.ToLower()))
-            {
-                return Generate(content, All);
-            }
-            else
-            {
-                var result = content;
-                lowerNames.ForEach(x => result = Generate(result, x));
-                return result;
-            }
+            var result = content;
+            lowerNames.ForEach(x => result = Generate(result, x));
+            return result;
 
         }
 
@@ -65,7 +46,7 @@ namespace RegexReplacer.Shared
         {
             ruleSetName = ruleSetName.ToLower();
 
-            var rules = ruleSets.Where(x => ruleSetName == All.ToLower() || ruleSetName == x.Name.ToLower())
+            var rules = ruleSets.Where(x => ruleSetName == x.Name.ToLower())
                                 .SelectMany(x => x.Rules)
                                 .ToList();
 
@@ -89,7 +70,7 @@ namespace RegexReplacer.Shared
                         break;
                     case RegexFunction.List:
                         var matches = Regex.Matches(input, replace, options);
-                        var newValues =  matches.Cast<Match>().ToList()
+                        var newValues = matches.Cast<Match>().ToList()
                                                 .Select(x => Regex.Replace(x.Value, replace, with, options));
                         result = string.Join("", newValues);
                         break;

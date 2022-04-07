@@ -11,19 +11,18 @@ namespace RegexReplacer.Client.ListViewItems
         private NotificationService? notificationService;
         private RuleSet ruleSet = new();
 
-        public RuleListViewItems()
-        {
-        }
-        public async Task Init(RuleSetHelper helper, NotificationService notificationService)
-        {
-            this.helper = helper;
-            this.notificationService = notificationService;
-            await LoadItems();
-        }
 
         public string Name { get => RuleSet.Name; set => RuleSet.Name = value; }
 
         public RuleSet RuleSet { get => ruleSet; set => ruleSet = value; }
+
+        public async Task Init(RuleSetHelper helper, NotificationService notificationService)
+        {
+            this.helper = helper;
+            ruleSet = helper.RuleSets.FirstOrDefault() ?? new();
+            this.notificationService = notificationService;
+            await LoadItems();
+        }
 
         public override async Task LoadItems()
         {

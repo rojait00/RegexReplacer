@@ -148,7 +148,7 @@ namespace RegexReplacer.Client.Helper
                 selectedRegexOptions.ToList().ForEach(x => options |= x);
 
                 var result = input;
-                if (rule.Function == RegexFunction.Replace)
+                if (rule.Function == RegexFunction.List)
                 {
                     var values = Regex.Matches(input, rule.Replace, options).Cast<Match>().Select(x => x.Value);
                     values = values.Select(input => Regex.Replace(input, rule.Replace, rule.With, options));

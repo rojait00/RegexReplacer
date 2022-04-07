@@ -8,7 +8,7 @@
 
 <RadzenSplitter class="full-h, full-w">
     <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
-        <RadzenTextArea @bind-Value=@input class="full-h, full-w" Change=@((args) => OnChange())></RadzenTextArea>
+        <RadzenTextArea @bind-Value=@input class="full-h, full-w" @oninput=@(args => OnChange(args.Value.ToString()))></RadzenTextArea>
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="20%" Min="30px" Max="90%">
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
@@ -46,10 +46,15 @@
         await base.OnInitializedAsync();
     }
 
-    public void OnChange()
+    public void OnChange(string newInput = null)
     {
         if (ruleSetHelper == null)
             return;
+
+        if(newInput != null)
+        {
+            input = newInput;            
+        }
 
         output = ruleSetHelper.Generate(input, selectedRuleSets.ToList(), selectedOptions);
     }

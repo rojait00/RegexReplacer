@@ -1,18 +1,19 @@
 ﻿@page "/"
 @using RegexReplacer.Client.Helper
 @using System.Text.RegularExpressions
+@using RegexReplacer.Shared
 @inject IJSRuntime jsRuntime
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Regex Replacer</PageTitle>
 
 <RadzenSplitter class="full-h, full-w">
     <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
-        <RadzenTextArea @bind-Value=@input class="full-h, full-w" Change=@(args => OnChange())></RadzenTextArea>
+        <RadzenTextArea @bind-Value=@input class="full-h, full-w" Change=@((args) => OnChange())></RadzenTextArea>
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="20%" Min="30px" Max="90%">
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                         Placeholder="Select Rule Set..." Multiple="true" Class="full-w"
-                        @bind-Value=@selectedRuleSets Data=@ruleSets />
+                        @bind-Value=@selectedRuleSets Data=@ruleSets TextProperty="Name"/>
 
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                         Placeholder="Select Option..." Multiple="true" Class="full-w"
@@ -33,15 +34,14 @@
     IEnumerable<RegexOptions> regexOptions = GetOptions();
     IEnumerable<RegexOptions> selectedOptions = new[] { RegexOptions.IgnoreCase };
 
-    IEnumerable<string> ruleSets = Array.Empty<string>();
-    IEnumerable<string> selectedRuleSets = Array.Empty<string>();
+    IEnumerable<RuleSet> ruleSets = Array.Empty<RuleSet>();
+    IEnumerable<RuleSet> selectedRuleSets = Array.Empty<RuleSet>();
 
     protected override void OnInitialized()
     {
         ruleSetHelper = new RuleSetHelper(jsRuntime);
-        ruleSets = ruleSetHelper.GetRuleSetNames();
+        ruleSets = ruleSetHelper.RuleSets;
         selectedRuleSets = ruleSets.ToList();
-        ruleSetHelper.SelectedRegexOptions = selectedOptions;
 
         base.OnInitialized();
     }
@@ -51,8 +51,7 @@
         if (ruleSetHelper == null)
             return;
 
-        ruleSetHelper.SelectedRegexOptions = selectedOptions;
-        output = ruleSetHelper.Generate(input, selectedRuleSets);
+        output = ruleSetHelper.Generate(input, selectedRuleSets.ToList(), selectedOptions);
     }
 
     private static List<RegexOptions> GetOptions()

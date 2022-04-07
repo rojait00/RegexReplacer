@@ -78,7 +78,7 @@ else
     RuleSetHelper? ruleSetHelper = null;
 
     IEnumerable<RuleSet> ruleSets = Array.Empty<RuleSet>();
-    RuleSet ruleSet = null;
+    RuleSet? ruleSet = null;
 
     IEnumerable<RegexFunction> regexFunctions = GetFunctions();
 
@@ -93,7 +93,7 @@ else
 
     public async Task Save()
     {
-        if (ruleSetHelper == null || rulesGrid == null)
+        if (ruleSetHelper == null || rulesGrid == null || ruleSet == null)
             return;
 
         await ruleSetHelper.SaveRuleSetAsync(ruleSet, notificationService);

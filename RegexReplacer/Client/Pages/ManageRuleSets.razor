@@ -45,7 +45,7 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="RuleSet" Context="ruleSet" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="5%">
             <Template Context="ruleSet">
-                <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="upload" Class="m-1" Click="@(args => Upload(ruleSet))" />
+                <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="upload" Class="m-1" />
             </Template>
             <EditTemplate Context="ruleSet">
             </EditTemplate>
@@ -83,8 +83,8 @@
         await base.OnInitializedAsync();
 
         ruleSetHelper = new RuleSetHelper(jsRuntime);
-        var localRuleSetNames = ruleSetHelper.GetRuleSetNames();
-        localRuleSets = localRuleSetNames.Select(x => new RuleSet(x)).ToList();
+        var localRuleSetNames = ruleSetHelper.RuleSets;
+        localRuleSets = localRuleSetNames.ToList();
 
         try
         {
@@ -175,7 +175,7 @@
         if (ruleSetGrid == null)
             return;
 
-        ruleSetToInsert = new RuleSet(name);
+        ruleSetToInsert = new RuleSet();
         await ruleSetGrid.InsertRow(ruleSetToInsert);
     }
 
@@ -203,15 +203,15 @@
         await AddOrUpdateAsync(ruleSet);
     }
     
-    async Task Upload(RuleSet ruleSet)
-    {
-        // ToDo: Upload
-    }
+    //async Task Upload(RuleSet ruleSet)
+    //{
+    //    // ToDo: Upload
+    //}
     
-    async Task Download(RuleSet ruleSet)
-    {
-        // ToDo: Download
-    }
+    //async Task Download(RuleSet ruleSet)
+    //{
+    //    // ToDo: Download
+    //}
 
     private static List<RegexFunction> GetFunctions()
     {

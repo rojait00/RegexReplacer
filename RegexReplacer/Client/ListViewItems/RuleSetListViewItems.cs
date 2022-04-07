@@ -25,6 +25,7 @@ namespace RegexReplacer.Client.ListViewItems
         public override async Task OnChangedCollectionChanged()
         {
             // ToDo: impl.
+            await base.OnChangedCollectionChanged();
         }
     }
 }

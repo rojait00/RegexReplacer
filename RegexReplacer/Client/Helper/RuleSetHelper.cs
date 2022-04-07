@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace RegexReplacer.Client.Helper
@@ -60,6 +61,13 @@ namespace RegexReplacer.Client.Helper
             }
         }
 
+        public List<string> GetRuleSetNames()
+        {
+            return ruleSets.Select(x => x.Name)
+                           .Where(x => string.IsNullOrWhiteSpace(x))
+                           .ToList();
+        }
+
         private async Task<List<Guid>> LoadRuleSetIds()
         {
             var content = await dataSaveHelper.Read(RulSetNamesCookie);
@@ -82,11 +90,11 @@ namespace RegexReplacer.Client.Helper
 
             var contents = await Task.WhenAll(tasks);
 
-                ruleSets = contents.Select(x => JsonConvert.DeserializeObject<RuleSet>(x) ?? new RuleSet())
-                                   .Where(x => !x.IsNull)
-                                   .ToList();
+            ruleSets = contents.Select(x => JsonConvert.DeserializeObject<RuleSet>(x) ?? new RuleSet())
+                               .Where(x => !x.IsNull)
+                               .ToList();
         }
-        
+
         private static void ShowErrorMessage(NotificationService notificationService, Exception ex)
         {
             var message = new NotificationMessage
@@ -109,6 +117,43 @@ namespace RegexReplacer.Client.Helper
                 Duration = 3000
             };
             notificationService.Notify(message);
+        }
+
+        public string Generate(string content, List<RuleSet> ruleSets, IEnumerable<RegexOptions> selectedRegexOptions)
+        {
+            var result = content;
+            var rules = ruleSets.SelectMany(x => x.Rules)
+                                .ToList();
+            rules.ForEach(x => result = Replace(result, x, selectedRegexOptions));
+            return result;
+
+        }
+
+        private static string Replace(string input, Rule rule, IEnumerable<RegexOptions> selectedRegexOptions)
+        {
+            try
+            {
+                RegexOptions options = RegexOptions.None;
+                selectedRegexOptions.ToList().ForEach(x => options |= x);
+
+                var result = input;
+                if (rule.Function == RegexFunction.Replace)
+                {
+                    var values = Regex.Matches(input, rule.Replace, options).Cast<Match>().Select(x => x.Value);
+                    values = values.Select(input => Regex.Replace(input, rule.Replace, rule.With, options));
+                    result = string.Join("", values);
+                }
+                else if (rule.Function == RegexFunction.Replace)
+                {
+                    result = Regex.Replace(input, rule.Replace, rule.With, options);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return $"ERROR: {ex.Message}";
+            }
         }
     }
 }

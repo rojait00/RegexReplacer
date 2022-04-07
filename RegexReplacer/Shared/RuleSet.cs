@@ -23,7 +23,7 @@ namespace RegexReplacer.Shared
 
         public bool IsNull { get; } = false;
 
-        public IList<Rule> Rules { get; set; } = new List<Rule>();
+        public List<Rule> Rules { get; set; } = new ();
 
         public static RuleSet GetDemoRuleSet()
         {

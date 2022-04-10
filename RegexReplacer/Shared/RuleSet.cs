@@ -19,8 +19,14 @@ namespace RegexReplacer.Shared
         public RuleSet()
         { }
 
+        [ColumnDefinition("Name", IsRequired = true)]
         public string Name { get; set; } = "";
 
+        [JsonIgnore]
+        [ColumnDefinition("Rules", DisplayMode = DisplayMode.Details, IsReadOnly = true)]
+        public int RuleCount { get => Rules.Count; }
+
+        [JsonIgnore]
         public bool IsNull { get; } = false;
 
         public List<Rule> Rules { get; set; } = new ();
@@ -37,6 +43,11 @@ namespace RegexReplacer.Shared
                     new Rule("12\\d456","123456", RegexFunction.Replace)
                 }
             };
+        }
+
+        public static new string GetDisplayName()
+        {
+            return "Rule Set";
         }
     }
 }

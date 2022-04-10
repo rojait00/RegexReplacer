@@ -4,6 +4,9 @@ namespace RegexReplacer.Shared
 {
     public class Rule : UpdatableBase
     {
+        /// <summary>
+        /// Needed for JsonConvert
+        /// </summary>
         public Rule()
         {
 
@@ -24,5 +27,10 @@ namespace RegexReplacer.Shared
 
         [ColumnDefinition("Function")]
         public RegexFunction Function { get; set; } = RegexFunction.Replace;
+
+        public static new string GetDisplayName()
+        {
+            return "Rule";
+        }
     }
 }

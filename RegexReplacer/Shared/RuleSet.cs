@@ -39,9 +39,9 @@ namespace RegexReplacer.Shared
                 Name = "Demo",
                 IsReadOnly = true,
                 Rules = new List<Rule> {
-                    new Rule("test","test1", RegexFunction.Replace),
-                    new Rule("a","b", RegexFunction.Replace),
-                    new Rule("12\\d456","123456", RegexFunction.Replace)
+                    new Rule("test","test1", RegexFunction.Replace, true),
+                    new Rule("a","b", RegexFunction.Replace, true),
+                    new Rule("12\\d456","123456", RegexFunction.Replace, true)
                 }
             };
         }

@@ -24,6 +24,14 @@ namespace RegexReplacer.Client.ListViewItems
             }
         }
 
+        public override async Task InsertRow()
+        {
+            if (!RuleSet.IsReadOnly)
+            {
+                await base.InsertRow();
+            }
+        }
+
         public async Task Init(RuleSetHelper helper, NotificationService notificationService)
         {
             this.helper = helper;

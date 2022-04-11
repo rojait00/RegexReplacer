@@ -1,0 +1,95 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using System.Text
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div @ref="dropZoneElement" class="drop-zone @Class">
+    <div @ref="dropZoneOverlayElement" class="overlay">
+        <h1 class="drop-text">Drop File Here...</h1>
+    </div>
+
+    @if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    <InputFile OnChange="@OnChange" @ref="inputFile" hidden />
+</div>
+
+@code
+{
+    [Parameter]
+    public string Class { get; set; } = "";
+
+    [Parameter]
+    public string Value
+    {
+        get => content;
+        set
+        {
+            if (value == content)
+                return;
+
+            content = value;
+            if (ValueChanged.HasDelegate)
+            {
+                ValueChanged.InvokeAsync(content);
+            }
+        }
+    }
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; } = null;
+
+    ElementReference dropZoneElement;
+    ElementReference dropZoneOverlayElement;
+
+    InputFile inputFile = null!;
+
+    IJSObjectReference? _module;
+    IJSObjectReference? _dropZoneInstance;
+
+    string content = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Load the JS file
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./dropZone.js");
+
+            // Initialize the drop zone
+            _dropZoneInstance = await _module.InvokeAsync<IJSObjectReference>("initializeFileDropZone", dropZoneElement, dropZoneOverlayElement, inputFile.Element);
+        }
+    }
+
+    // Called when a new file is uploaded
+    async Task OnChange(InputFileChangeEventArgs e)
+    {
+        using var stream = e.File.OpenReadStream();
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        Value = Encoding.Default.GetString(ms?.ToArray() ?? new byte[0]);
+    }
+
+    // Unregister the drop zone events
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_dropZoneInstance != null)
+            {
+                await _dropZoneInstance.InvokeVoidAsync("dispose");
+                await _dropZoneInstance.DisposeAsync();
+            }
+
+            if (_module != null)
+            {
+                await _module.DisposeAsync();
+            }
+        }
+        catch { }
+    }
+}

@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
+@using RadzenHelper
 @using RadzenHelper.Views
 @using RegexReplacer.Client.Helper
 @using RegexReplacer.Client.ListViewItems
@@ -10,6 +11,7 @@
 @inject HttpClient Http
 @inject IJSRuntime jsRuntime
 @inject NotificationService notificationService
+@inject NavigationManager navigationManager
 
 <PageTitle>Manage Rule Sets</PageTitle>
 
@@ -22,7 +24,7 @@
 </AuthorizeView>
 
 
-<EasyListView TItem="RuleSet" Items="localRuleSets">
+<EasyListView TItem="RuleSet" Items="localRuleSets" SpecialActions=@(new List<SpecialRowAction<RuleSet>>() {goToAction})>
 
 </EasyListView>
 
@@ -34,8 +36,15 @@
     private RuleSetListViewItems localRuleSets = new RuleSetListViewItems();
     private List<RuleSet> remoteRuleSets = new();
 
+    SpecialRowAction<RuleSet> goToAction = new("settings", GoTo);
 
     RuleSetHelper? ruleSetHelper;
+
+    public static  void GoTo(RuleSet ruleSet, ServiceContainer serviceContainer)
+    {
+        serviceContainer.NavigationManager?.NavigateTo($"/editruleset/{ruleSet.Id}");
+
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,13 +70,13 @@
         //}
     }
 
-    
-    
+
+
     //async Task Upload(RuleSet ruleSet)
     //{
     //    // ToDo: Upload
     //}
-    
+
     //async Task Download(RuleSet ruleSet)
     //{
     //    // ToDo: Download

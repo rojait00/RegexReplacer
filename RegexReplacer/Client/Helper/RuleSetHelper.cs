@@ -104,7 +104,10 @@ namespace RegexReplacer.Client.Helper
 
         private async Task WriteRuleSetIdsAsync()
         {
-            var ids = ruleSets.Select(x => x.Id).ToList();
+            var ids = ruleSets.Select(x => x.Id)
+                              .Where(x => x != Guid.Empty)
+                              .ToList();
+
             var content = JsonConvert.SerializeObject(ids);
             await dataSaveHelper.Save(RulSetNamesCookie, content);
         }
@@ -167,6 +170,9 @@ namespace RegexReplacer.Client.Helper
             {
                 RegexOptions options = RegexOptions.None;
                 selectedRegexOptions.ToList().ForEach(x => options |= x);
+
+                rule.With = rule.With.Replace("\\n", "\n");
+
 
                 var result = input;
                 if (rule.Function == RegexFunction.List)

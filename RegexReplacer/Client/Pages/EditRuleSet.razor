@@ -1,4 +1,5 @@
 ﻿@page "/editruleset"
+@page "/editruleset/{Id}"
 @using RegexReplacer.Client.Helper
 @using RegexReplacer.Client.ListViewItems
 @using RegexReplacer.Shared
@@ -34,14 +35,27 @@ else
 
     List<RegexFunction> regexFunctions = EnumHelper.GetEnums<RegexFunction>();
 
+    [Parameter]
+    public string? Id { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
         ruleSetHelper = await RuleSetHelper.GetRuleSetHelper(jsRuntime);
         await items.Init(ruleSetHelper, notificationService);
-
         ruleSets = ruleSetHelper.RuleSets;
+
+        if (Guid.TryParse(Id ?? "", out var id))
+        {
+            var newRuleSet = ruleSets.FirstOrDefault(x => x.Id == id);
+            if (newRuleSet != null)
+            {
+                items.RuleSet = newRuleSet;
+                await items.LoadItems();
+            }
+        }
+
     }
 
     public async Task OnChange(object? selection)

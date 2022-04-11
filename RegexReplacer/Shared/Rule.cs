@@ -18,6 +18,10 @@ namespace RegexReplacer.Shared
             With = with;
             Function = regexFunction;
         }
+        public Rule(string replace, string with, RegexFunction regexFunction, bool isReadOnly) : this(replace, with, regexFunction)
+        {
+            IsReadOnly = isReadOnly;
+        }
 
         [ColumnDefinition("Replace", IsRequired = true)]
         public string Replace { get; set; } = "";

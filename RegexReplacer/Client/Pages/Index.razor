@@ -2,27 +2,30 @@
 @using RegexReplacer.Client.Helper
 @using System.Text.RegularExpressions
 @using RegexReplacer.Shared
+@using RadzenHelper.Views
 @inject IJSRuntime jsRuntime
 
 <PageTitle>Regex Replacer</PageTitle>
 
-<RadzenSplitter class="full-h, full-w">
-    <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
-        <RadzenTextArea @bind-Value=@input class="full-h, full-w" @oninput=@((args) => OnChangeText(args.Value?.ToString()))></RadzenTextArea>
-    </RadzenSplitterPane>
-    <RadzenSplitterPane Size="20%" Min="30px" Max="90%">
-        <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        Placeholder="Select Rule Set..." Multiple="true" Class="full-w" Change=@OnChange
-                        @bind-Value=@selectedRuleSets Data=@ruleSets TextProperty="Name" />
+<DropZone @bind-Value="@Input" Class="full-h full-w">
+    <RadzenSplitter class="full-h full-w">
+        <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
+            <RadzenTextArea @bind-Value=@input class="full-h full-w" @oninput=@((args) => OnChangeText(args.Value?.ToString()))></RadzenTextArea>
+        </RadzenSplitterPane>
+        <RadzenSplitterPane Size="20%" Min="30px" Max="90%">
+            <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            Placeholder="Select Rule Set..." Multiple="true" Class="full-w" Change=@OnChange
+                            @bind-Value=@selectedRuleSets Data=@ruleSets TextProperty="Name" />
 
-        <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        Placeholder="Select Option..." Multiple="true" Class="full-w" Change=@OnChange
-                        @bind-Value=@selectedOptions Data=@regexOptions />
-    </RadzenSplitterPane>
-    <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
-        <RadzenTextArea @bind-Value=@output ReadOnly=true class="full-h, full-w"></RadzenTextArea>
-    </RadzenSplitterPane>
-</RadzenSplitter>
+            <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            Placeholder="Select Option..." Multiple="true" Class="full-w" Change=@OnChange
+                            @bind-Value=@selectedOptions Data=@regexOptions />
+        </RadzenSplitterPane>
+        <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
+            <RadzenTextArea @bind-Value=@output ReadOnly=true class="full-h full-w"></RadzenTextArea>
+        </RadzenSplitterPane>
+    </RadzenSplitter>
+</DropZone>
 
 @code
 {
@@ -36,6 +39,16 @@
 
     List<RuleSet> ruleSets = new();
     IEnumerable<RuleSet> selectedRuleSets = new List<RuleSet>();
+
+    public string Input
+    {
+        get => input;
+        set
+        {
+            input = value;
+            Generate();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,8 +79,8 @@
         if (ruleSetHelper == null)
             return;
 
-        var optionList = selectedOptions.ToList();
+        var optionList = selectedOptions?.ToList() ?? new List<RegexOptions>();
 
         output = ruleSetHelper.Generate(input, selectedRuleSets.ToList(), optionList);
     }
-}
+    }

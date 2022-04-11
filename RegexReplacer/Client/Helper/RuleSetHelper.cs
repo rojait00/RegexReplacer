@@ -13,7 +13,7 @@ namespace RegexReplacer.Client.Helper
 {
     internal partial class RuleSetHelper
     {
-        private const string RulSetNamesCookie = "[RuleSetNames]";
+        private const string RulSetNamesCookie = "_RuleSetNames_";
         DataSaveHelper dataSaveHelper;
         List<RuleSet> ruleSets = new();
 
@@ -34,6 +34,27 @@ namespace RegexReplacer.Client.Helper
         public RuleSet GetRuleSet(Guid id)
         {
             return ruleSets.FirstOrDefault(x => x.Id == id) ?? new RuleSet();
+        }
+
+        public async Task<bool> DeleteRuleSetAsync(RuleSet ruleSet, NotificationService notificationService)
+        {
+            if (ruleSet.Id == Guid.Empty)
+            {
+                return true;
+            }
+
+            try
+            {
+                ruleSets.RemoveAll(x => x.Id == ruleSet.Id);
+                await WriteRuleSetIdsAsync();
+                await dataSaveHelper.Delete(ruleSet.Id.ToString());
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ShowErrorMessage(notificationService, ex);
+                return false;
+            }
         }
 
         public async Task<bool> SaveRuleSetAsync(RuleSet ruleSet, NotificationService notificationService)
@@ -111,7 +132,7 @@ namespace RegexReplacer.Client.Helper
             var message = new NotificationMessage
             {
                 Severity = NotificationSeverity.Error,
-                Summary = "Could not save Rule Set!",
+                Summary = "There was an error!",
                 Detail = ex.Message,
                 Duration = 9000
             };

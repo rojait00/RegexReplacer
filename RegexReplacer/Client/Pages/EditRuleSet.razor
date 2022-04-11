@@ -20,10 +20,7 @@ else
 {
     <RadzenDropDown AllowClear="false" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 Placeholder="Select Rule Set Name..." Multiple="false" Class="w-25"
-                @bind-Value=@ruleSet Data=@ruleSets TextProperty="Name" />
-    <br />
-    <hr />
-    <br />
+                @bind-Value=@items.RuleSet Data=@ruleSets TextProperty="Name" Change=@OnChange />
     <EasyListView TItem="Rule" Items="items">
     </EasyListView>
 }
@@ -32,7 +29,6 @@ else
     RuleSetHelper? ruleSetHelper = null;
 
     IEnumerable<RuleSet> ruleSets = Array.Empty<RuleSet>();
-    RuleSet? ruleSet = null;
 
     RuleListViewItems items = new RuleListViewItems();
 
@@ -43,10 +39,14 @@ else
         await base.OnInitializedAsync();
 
         ruleSetHelper = await RuleSetHelper.GetRuleSetHelper(jsRuntime);
-        ruleSets = ruleSetHelper.RuleSets;
-        ruleSet = ruleSets.FirstOrDefault() ?? new();
-
         await items.Init(ruleSetHelper, notificationService);
+
+        ruleSets = ruleSetHelper.RuleSets;
+    }
+
+    public async Task OnChange(object? selection)
+    {
+        await items.LoadItems();
     }
 
 }

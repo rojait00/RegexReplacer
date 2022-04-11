@@ -8,15 +8,15 @@
 
 <RadzenSplitter class="full-h, full-w">
     <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
-        <RadzenTextArea @bind-Value=@input class="full-h, full-w" @oninput=@(args => OnChange(args.Value?.ToString()))></RadzenTextArea>
+        <RadzenTextArea @bind-Value=@input class="full-h, full-w" @oninput=@((args) => OnChangeText(args.Value?.ToString()))></RadzenTextArea>
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="20%" Min="30px" Max="90%">
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        Placeholder="Select Rule Set..." Multiple="true" Class="full-w" SelectedItemChanged=@((args) => OnChange())
+                        Placeholder="Select Rule Set..." Multiple="true" Class="full-w" Change=@OnChange
                         @bind-Value=@selectedRuleSets Data=@ruleSets TextProperty="Name" />
 
         <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        Placeholder="Select Option..." Multiple="true" Class="full-w" SelectedItemChanged=@((args) => OnChange())
+                        Placeholder="Select Option..." Multiple="true" Class="full-w" Change=@OnChange
                         @bind-Value=@selectedOptions Data=@regexOptions />
     </RadzenSplitterPane>
     <RadzenSplitterPane Size="40%" Min="30px" Max="90%">
@@ -32,10 +32,10 @@
     RuleSetHelper? ruleSetHelper;
 
     List<RegexOptions> regexOptions = EnumHelper.GetEnums<RegexOptions>();
-    List<RegexOptions> selectedOptions = new() { RegexOptions.IgnoreCase };
+    IEnumerable<RegexOptions> selectedOptions = new List<RegexOptions>() { RegexOptions.IgnoreCase };
 
     List<RuleSet> ruleSets = new();
-    List<RuleSet> selectedRuleSets = new();
+    IEnumerable<RuleSet> selectedRuleSets = new List<RuleSet>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,16 +46,28 @@
         await base.OnInitializedAsync();
     }
 
-    public void OnChange(string? newInput = null)
+    public void OnChange(object? selection)
+    {
+        Generate();
+    }
+
+    public void OnChangeText(string? newInput)
+    {
+        if (newInput != null)
+        {
+            input = newInput;
+        }
+
+        Generate();
+    }
+
+    public void Generate()
     {
         if (ruleSetHelper == null)
             return;
 
-        if(newInput != null)
-        {
-            input = newInput;            
-        }
+        var optionList = selectedOptions.ToList();
 
-        output = ruleSetHelper.Generate(input, selectedRuleSets.ToList(), selectedOptions);
+        output = ruleSetHelper.Generate(input, selectedRuleSets.ToList(), optionList);
     }
 }

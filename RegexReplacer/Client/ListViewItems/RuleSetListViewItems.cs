@@ -19,14 +19,29 @@ namespace RegexReplacer.Client.ListViewItems
 
         public override async Task LoadItems()
         {
-            Items = helper?.RuleSets ?? new List<RuleSet>();
+            Items = helper?.RuleSets.ToList() ?? new List<RuleSet>();
             await base.LoadItems();
+            ItemToInsert = null;
         }
 
-        public override async Task OnChangedCollectionChanged()
+        public override async Task DeleteRow(RuleSet ruleSet)
         {
-            // ToDo: impl.
-            await base.OnChangedCollectionChanged();
+            await base.DeleteRow(ruleSet);
+
+            if (helper != null && notificationService != null && ruleSet != null)
+            {
+                await helper.DeleteRuleSetAsync(ruleSet, notificationService);
+            }
+            await base.OnChangedCollectionChanged(ruleSet);
+        }
+
+        public override async Task OnChangedCollectionChanged(RuleSet? ruleSet)
+        {
+            if (helper != null && notificationService != null && ruleSet != null)
+            {
+                await helper.SaveRuleSetAsync(ruleSet, notificationService);
+            }
+            await base.OnChangedCollectionChanged(ruleSet);
         }
     }
 }

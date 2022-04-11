@@ -11,10 +11,6 @@ namespace RegexReplacer.Client.Helper
             this.js = js;
         }
 
-        public async ValueTask TickerChanged(string symbol, decimal price)
-        {
-            await js.InvokeVoidAsync("displayTickerAlert1", symbol, price);
-        }
         public async Task Save(string name, string content)
         {
             await js.InvokeVoidAsync("localStorage.setItem", name, content);

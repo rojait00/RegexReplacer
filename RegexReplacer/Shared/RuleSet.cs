@@ -37,6 +37,7 @@ namespace RegexReplacer.Shared
             {
                 Id = Guid.Empty,
                 Name = "Demo",
+                IsReadOnly = true,
                 Rules = new List<Rule> {
                     new Rule("test","test1", RegexFunction.Replace),
                     new Rule("a","b", RegexFunction.Replace),

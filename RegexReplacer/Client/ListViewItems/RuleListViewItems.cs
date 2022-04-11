@@ -14,29 +14,44 @@ namespace RegexReplacer.Client.ListViewItems
 
         public string Name { get => RuleSet.Name; set => RuleSet.Name = value; }
 
-        public RuleSet RuleSet { get => ruleSet; set => ruleSet = value; }
+        public RuleSet RuleSet
+        {
+            get => ruleSet;
+            set
+            {
+                ruleSet = value;
+                ItemToInsert = null;
+            }
+        }
 
         public async Task Init(RuleSetHelper helper, NotificationService notificationService)
         {
             this.helper = helper;
-            ruleSet = helper.RuleSets.FirstOrDefault() ?? new();
             this.notificationService = notificationService;
+            ruleSet = helper?.RuleSets.FirstOrDefault() ?? RuleSet.GetDemoRuleSet();
             await LoadItems();
+        }
+
+        public override async Task DeleteRow(Rule item)
+        {
+            await base.DeleteRow(item);
+            await OnChangedCollectionChanged(item);
         }
 
         public override async Task LoadItems()
         {
-            RuleSet = helper?.GetRuleSet(RuleSet.Id) ?? new();
             Items = ruleSet.Rules;
             await base.LoadItems();
         }
 
-        public override async Task OnChangedCollectionChanged()
+        public override async Task OnChangedCollectionChanged(Rule? rule)
         {
             if (helper != null && notificationService != null)
             {
                 await helper.SaveRuleSetAsync(RuleSet, notificationService);
             }
+
+            await base.OnChangedCollectionChanged(rule);
         }
     }
 }

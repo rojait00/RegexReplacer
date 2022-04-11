@@ -44,21 +44,21 @@
         ruleSetHelper = await RuleSetHelper.GetRuleSetHelper(jsRuntime);
         await localRuleSets.Init(ruleSetHelper, notificationService);
 
-        try
-        {
-            var newRuleSets = await Http.GetFromJsonAsync<RuleSet[]>("RuleSet") ?? Array.Empty<RuleSet>();
-            remoteRuleSets.AddRange(newRuleSets);
-        }
-        catch (Exception exception)
-        {
-            notificationService.Notify(new NotificationMessage
-                {
-                    Summary = "Could not load cloud Rule Sets",
-                    Detail = exception.Message,
-                    Severity = NotificationSeverity.Warning,
-                    Duration = 3000
-                });
-        }
+        //try
+        //{
+        //    var newRuleSets = await Http.GetFromJsonAsync<RuleSet[]>("RuleSet") ?? Array.Empty<RuleSet>();
+        //    remoteRuleSets.AddRange(newRuleSets);
+        //}
+        //catch (Exception exception)
+        //{
+        //    notificationService.Notify(new NotificationMessage
+        //        {
+        //            Summary = "Could not load cloud Rule Sets",
+        //            Detail = exception.Message,
+        //            Severity = NotificationSeverity.Warning,
+        //            Duration = 3000
+        //        });
+        //}
     }
 
     

@@ -192,7 +192,6 @@ namespace RegexReplacer.Client.Helper
             {
                 return $"ERROR: {ex.Message}";
             }
-            var result = EnhancedReplace(input, @"(public \w+ )(\w)", @"$1\U$2", RegexOptions.IgnoreCase);
         }
 
         private static string EnhancedReplace(string input, string pattern, string replacement, RegexOptions options)

@@ -178,12 +178,12 @@ namespace RegexReplacer.Client.Helper
                 if (rule.Function == RegexFunction.List)
                 {
                     var values = Regex.Matches(input, rule.Replace, options).Cast<Match>().Select(x => x.Value);
-                    values = values.Select(input => Regex.Replace(input, rule.Replace, rule.With, options));
+                    values = values.Select(input => EnhancedReplace(input, rule.Replace, rule.With, options));
                     result = string.Join("", values);
                 }
                 else if (rule.Function == RegexFunction.Replace)
                 {
-                    result = Regex.Replace(input, rule.Replace, rule.With, options);
+                    result = EnhancedReplace(input, rule.Replace, rule.With, options);
                 }
 
                 return result;
@@ -192,6 +192,16 @@ namespace RegexReplacer.Client.Helper
             {
                 return $"ERROR: {ex.Message}";
             }
+            var result = EnhancedReplace(input, @"(public \w+ )(\w)", @"$1\U$2", RegexOptions.IgnoreCase);
+        }
+
+        private static string EnhancedReplace(string input, string pattern, string replacement, RegexOptions options)
+        {
+            replacement = Regex.Replace(replacement, @"(?<mode>\\[UL])(?<group>\$((\d+)|({[^}]+})))", @"<!<mode:${mode}>%&${group}&%>");
+            var output = Regex.Replace(input, pattern, replacement, options);
+            output = Regex.Replace(output, @"<!<mode:\\L>%&(?<value>[\w\W]*?)&%>", x => x.Groups["value"].Value.ToLower());
+            output = Regex.Replace(output, @"<!<mode:\\U>%&(?<value>[\w\W]*?)&%>", x => x.Groups["value"].Value.ToUpper());
+            return output;
         }
     }
 }

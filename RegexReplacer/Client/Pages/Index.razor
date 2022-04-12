@@ -33,6 +33,7 @@
     string output = "";
 
     RuleSetHelper? ruleSetHelper;
+    DataSaveHelper? dataSaveHelper;
 
     List<RegexOptions> regexOptions = EnumHelper.GetEnums<RegexOptions>();
     IEnumerable<RegexOptions> selectedOptions = new List<RegexOptions>() { RegexOptions.IgnoreCase };
@@ -52,9 +53,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ruleSetHelper = await RuleSetHelper.GetRuleSetHelper(jsRuntime);
+        dataSaveHelper = new DataSaveHelper(jsRuntime);
+        ruleSetHelper = await RuleSetHelper.GetRuleSetHelper(dataSaveHelper);
         ruleSets = ruleSetHelper.RuleSets;
         selectedRuleSets = ruleSets.ToList();
+
+        input = await dataSaveHelper.Read("_oldInput_");
+        input ??= "";
 
         await base.OnInitializedAsync();
     }
@@ -82,5 +87,10 @@
         var optionList = selectedOptions?.ToList() ?? new List<RegexOptions>();
 
         output = ruleSetHelper.Generate(input, selectedRuleSets.ToList(), optionList);
+
+        if (dataSaveHelper == null)
+            return;
+
+        new Task(async () => { await dataSaveHelper.Save("_oldInput_", input); }).Start();
     }
-    }
+}

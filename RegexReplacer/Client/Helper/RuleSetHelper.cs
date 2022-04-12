@@ -24,9 +24,10 @@ namespace RegexReplacer.Client.Helper
             this.dataSaveHelper = dataSaveHelper;
         }
 
-        public static async Task<RuleSetHelper> GetRuleSetHelper(IJSRuntime jsRuntime)
+        public static async Task<RuleSetHelper> GetRuleSetHelper(IJSRuntime jSRuntime) => await GetRuleSetHelper(new DataSaveHelper(jSRuntime));
+        public static async Task<RuleSetHelper> GetRuleSetHelper(DataSaveHelper dataSaveHelper)
         {
-            var helper = new RuleSetHelper(new DataSaveHelper(jsRuntime));
+            var helper = new RuleSetHelper(dataSaveHelper);
             await helper.LoadRuleSetsAsync();
             return helper;
         }

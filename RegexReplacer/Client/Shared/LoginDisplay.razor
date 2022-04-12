@@ -6,19 +6,26 @@
 
 <AuthorizeView>
     <Authorized>
-        <a href="authentication/profile">Hello, @context.User.Identity?.Name!</a>
-        <button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button>
+        <RadzenButton Click=@(args => GoTo("authentication/profile")) Text="@($"Hello, {context.User.Identity?.Name}!")" Icon="account_circle" ButtonStyle="ButtonStyle.Primary" />
+            &nbsp;&nbsp;&nbsp;
+        <RadzenButton Click=@(args => BeginSignOut(args)) Text="Log out" Icon="logout" ButtonStyle="ButtonStyle.Primary" />
     </Authorized>
     <NotAuthorized>
-        <a href="authentication/register">Register</a>
-        <a href="authentication/login">Log in</a>
+        <RadzenButton Click=@(args => GoTo("authentication/register")) Text="Register" Icon="person_add" ButtonStyle="ButtonStyle.Primary" />
+            &nbsp;&nbsp;&nbsp;
+        <RadzenButton Click=@(args => GoTo("authentication/login")) Text="Log in" Icon="login" ButtonStyle="ButtonStyle.Primary" />
     </NotAuthorized>
 </AuthorizeView>
 
-@code{
+@code {
     private async Task BeginSignOut(MouseEventArgs args)
     {
         await SignOutManager.SetSignOutState();
         Navigation.NavigateTo("authentication/logout");
+    }
+
+    private void GoTo(string link)
+    {
+        Navigation.NavigateTo(link);
     }
 }

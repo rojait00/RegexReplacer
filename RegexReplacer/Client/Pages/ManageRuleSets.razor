@@ -18,19 +18,18 @@
 <AuthorizeView>
     <NotAuthorized>
         <h5>You are not logged in. Consider to log in or create an account to be able to upload your rule sets to the cloud.</h5>
-        <a href="authentication/register">Register</a>
-        <a href="authentication/login">Log in</a>
+        <RadzenButton Click=@(args => GoTo("authentication/register")) Text="Register" Icon="person_add" ButtonStyle="ButtonStyle.Primary" />
+        &nbsp;&nbsp;&nbsp;
+        <RadzenButton Click=@(args => GoTo("authentication/login")) Text="Log in" Icon="login" ButtonStyle="ButtonStyle.Primary" />
+
+        <br />
+        <br />
+        <br />
+
     </NotAuthorized>
 </AuthorizeView>
 
-
-<EasyListView TItem="RuleSet" Items="localRuleSets" SpecialActions=@(new List<SpecialRowAction<RuleSet>>() {goToAction})>
-
-</EasyListView>
-
-
-
-
+<EasyListView TItem="RuleSet" Items="localRuleSets" SpecialActions=@(new List<SpecialRowAction<RuleSet>>() {goToAction})/>
 
 @code {
     private RuleSetListViewItems localRuleSets = new RuleSetListViewItems();
@@ -40,7 +39,12 @@
 
     RuleSetHelper? ruleSetHelper;
 
-    public static  void GoTo(RuleSet ruleSet, ServiceContainer serviceContainer)
+    private void GoTo(string link)
+    {
+        navigationManager.NavigateTo(link);
+    }
+
+    public static void GoTo(RuleSet ruleSet, ServiceContainer serviceContainer)
     {
         serviceContainer.NavigationManager?.NavigateTo($"/editruleset/{ruleSet.Id}");
 
